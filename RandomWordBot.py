@@ -17,38 +17,26 @@ import config
 import random
 #=========discord.pyの読み込み=================
 from discord.ext import commands
-from discord.ui import Button, View,TextInput,Modal,Select
-from discord import Message,SelectOption,Guild
+#from discord.ui import Button, View,TextInput,Modal,Select
+#from discord import Message,SelectOption,Guild
 import discord
 #スラッシュコマンドライブラリの読み込み
 from discord import app_commands
 #DB MYSQL
 import mysql.connector
 
-
+#=======================ログ出力設定============================
+from log_setting import getLogger
+import logging
+logger = getLogger(__name__)
 
 #==============================================
 # 自分のBotのアクセストークンに置き換えてください（コンフィグファイルに退避させています）
 TOKEN = config.TOKEN        #トークン
-#=======================ログ出力設定============================
-from log_setting import getLogger
-logger = getLogger(__name__)
 
 ##=====================MYSQL設定
 from db_setup import DbQuery
-#db_name=config.DB
-#user_name=config.USER_NAME
-#host_name=config.HOST
-#user_password=config.PASS
-## MySQL接続情報
-#db_config = {
-#    "host": host_name,  # ホスト名
-#    "user": user_name,       # ユーザ名
-#    "password": user_password,  # パスワード
-#    "database": db_name  # データベース名
-#}
-#db = NONE
-#connection = mysql.connector.connect(**db_config)
+
 #==============================================================
 #===分割ファイルの読み込み
 from button_sub import CreateButton #import CreateButton   #ボタン処理の読み込み
