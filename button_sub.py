@@ -258,11 +258,13 @@ class CreateButton(Button):
             #except Exception as Err:
             #    #print("Error, bot_id : " + bot_id + " channel_id : " + chat_id)
             #    logging.error(Err)
-            logger.info("=====================================ボタンコールバック処理終了======================================")
+            
         except Exception as ex:
            logger.warning(ex)
            await interaction.response.edit_message(content="処理に失敗しました。一度終了します。",embed=None,view=None,delete_after = 5)
        
         finally:
-            logger.info("=====================================ボタンクラス処理終了======================================")
+            logger.info("=====================================ボタンコールバック処理終了======================================")
+
+    logger.info("=====================================ボタンクラス処理終了======================================")
  
