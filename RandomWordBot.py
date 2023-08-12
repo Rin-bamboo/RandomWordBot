@@ -1,84 +1,61 @@
 
-# -*- coding: Shift-JIS -*-
 
 #BOTURL
 #https://discord.com/api/oauth2/authorize?client_id=1132298647288168519&permissions=8&scope=bot%20applications.commands
 #https://onl.bz/Q3wpVaV
 
-#”¼Šp‰p”‚Ì‹L†‚ğ“ü‚ê‚é‚ÆSQLƒGƒ‰[
+#åŠè§’è‹±æ•°ã®è¨˜å·ã‚’å…¥ã‚Œã‚‹ã¨SQLã‚¨ãƒ©ãƒ¼
 
-#İ’èƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ import
+#è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ import
 
 from importlib.abc import TraversableResources
 from operator import truediv
 from pickle import NONE
 from tarfile import RECORDSIZE
 import config
-import logging
-import logging.handlers
-#=========discord.py‚Ì“Ç‚İ‚İ=================
+
+import random
+#=========discord.pyã®èª­ã¿è¾¼ã¿=================
 from discord.ext import commands
-from db_setup import DbQuery
 from discord.ui import Button, View,TextInput,Modal,Select
 from discord import Message,SelectOption,Guild
 import discord
-#ƒXƒ‰ƒbƒVƒ…ƒRƒ}ƒ“ƒhƒ‰ƒCƒuƒ‰ƒŠ‚Ì“Ç‚İ‚İ
+#ã‚¹ãƒ©ãƒƒã‚·ãƒ¥ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®èª­ã¿è¾¼ã¿
 from discord import app_commands
 #DB MYSQL
-#from datetime import datetime, timedelta, timezone
-#from db_setup import DB
 import mysql.connector
 
+
+
 #==============================================
-# ©•ª‚ÌBot‚ÌƒAƒNƒZƒXƒg[ƒNƒ“‚É’u‚«Š·‚¦‚Ä‚­‚¾‚³‚¢iƒRƒ“ƒtƒBƒOƒtƒ@ƒCƒ‹‚É‘Ş”ğ‚³‚¹‚Ä‚¢‚Ü‚·j
-TOKEN = config.TOKEN_dev    #ƒeƒXƒgƒg[ƒNƒ“
-#TOKEN = config.TOKEN        #–{”Ôƒg[ƒNƒ“
-#=======================ƒƒOo—Íİ’è============================
-import logging
+# è‡ªåˆ†ã®Botã®ã‚¢ã‚¯ã‚»ã‚¹ãƒˆãƒ¼ã‚¯ãƒ³ã«ç½®ãæ›ãˆã¦ãã ã•ã„ï¼ˆã‚³ãƒ³ãƒ•ã‚£ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã«é€€é¿ã•ã›ã¦ã„ã¾ã™ï¼‰
+TOKEN = config.TOKEN        #ãƒˆãƒ¼ã‚¯ãƒ³
+#=======================ãƒ­ã‚°å‡ºåŠ›è¨­å®š============================
+from log_setting import getLogger
+logger = getLogger(__name__)
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-logging.getLogger('discord.http').setLevel(logging.DEBUG)
-
-FORMAT = '%(levelname)s %(asctime)s %(name)sF %(message)s'
-logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-
-handler = logging.handlers.RotatingFileHandler(
-    filename='discord.log',
-    encoding='utf-8',
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
-    backupCount=5,  # Rotate through 5 files
-)
-dt_fmt = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
+##=====================MYSQLè¨­å®š
+from db_setup import DbQuery
+#db_name=config.DB
+#user_name=config.USER_NAME
+#host_name=config.HOST
+#user_password=config.PASS
+## MySQLæ¥ç¶šæƒ…å ±
+#db_config = {
+#    "host": host_name,  # ãƒ›ã‚¹ãƒˆå
+#    "user": user_name,       # ãƒ¦ãƒ¼ã‚¶å
+#    "password": user_password,  # ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
+#    "database": db_name  # ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å
+#}
+#db = NONE
+#connection = mysql.connector.connect(**db_config)
 #==============================================================
-#sqllite‚Ì“Ç‚İ‚İ
-import sqlite3
-import random
-connection = sqlite3.connect(':memory:')
-cursor = connection.cursor()
+#===åˆ†å‰²ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
+from button_sub import CreateButton #import CreateButton   #ãƒœã‚¿ãƒ³å‡¦ç†ã®èª­ã¿è¾¼ã¿
+from view_sub import CreateView #import CreateView
 
-#tableì¬
-#‹¤’ÊƒNƒGƒŠ
-#=====================MYSQLİ’è
-db_name=config.DB
-user_name=config.USER_NAME
-host_name=config.HOST
-user_password=config.PASS
-# MySQLÚ‘±î•ñ
-db_config = {
-    "host": host_name,  # ƒzƒXƒg–¼
-    "user": user_name,       # ƒ†[ƒU–¼
-    "password": user_password,  # ƒpƒXƒ[ƒh
-    "database": db_name  # ƒf[ƒ^ƒx[ƒX–¼
-}
-db = NONE
-connection = mysql.connector.connect(**db_config)
-#==============================================================
-#intentsƒIƒuƒWƒFƒNƒgi‚·‚×‚Äæ“¾j‚ğ¶¬
+
+#intentsã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼ˆã™ã¹ã¦å–å¾—ï¼‰ã‚’ç”Ÿæˆ
 intents = discord.Intents.all()
 
 client = discord.Client(intents=intents)
@@ -92,450 +69,87 @@ class Client_bot(discord.Client):
 #client = Client_bot(intents=intents)
 tree = app_commands.CommandTree(client)
     
-logger.info("=====================================Šeíİ’è“Ç‚İ‚İI—¹======================================")
+logger.info("=====================================å„ç¨®è¨­å®šèª­ã¿è¾¼ã¿çµ‚äº†======================================")
 
-#View‚ğŒp³‚µ‚½ƒNƒ‰ƒX‚ğì¬
-class CreateView(View):
-    logger.info("=====================================ViewƒNƒ‰ƒXˆ—======================================")
-
-    def __init__(self):
-        logger.info("=====================================viewƒRƒ“ƒXƒgƒ‰ƒNƒ^ˆ—======================================")
-        super().__init__(timeout=None)
-        logger.info("=====================================viewƒRƒ“ƒXƒgƒ‰ƒNƒ^ˆ—I—¹======================================")
-    
-    logger.info("=====================================ViewƒNƒ‰ƒXˆ—I—¹======================================")
-
-#discord.ui.button‚ğŒp³‚µ callback‚ğƒI[ƒo[ƒ‰ƒCƒhI
-class CreateButton(Button):
-    logger.info("=====================================ƒ{ƒ^ƒ“ì¬ƒNƒ‰ƒXˆ—======================================")
-
-    async def callback(self, interaction: discord.Interaction):
-        logger.info("=====================================ƒ{ƒ^ƒ“ƒR[ƒ‹ƒoƒbƒNˆ—======================================")
-        #DBÚ‘±‚ÌƒNƒ‰ƒX‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»
-        queryDb = DbQuery()
-        message_view = CreateView()
-        #try:
-        button_custom_id = interaction.data["custom_id"]
-        #ƒRƒ}ƒ“ƒh‘—Mƒ†[ƒU[‚Ìæ“¾
-        userId = f"{interaction.user}"
-        userName = f"{interaction.user.display_name}"
-        #ƒT[ƒo[ID‚Ìæ“¾
-        guidId = f"{interaction.guild_id}"
-        #ƒ`ƒƒƒ“ƒlƒ‹ID‚Ìæ“¾
-        channnelId = f"{interaction.channel_id}"
-
-        select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
-        values = (guidId,channnelId)
-        resultData = queryDb.quryexcute(select_query,values)
-
-        try:
-            if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button":
-                logger.info("ŠJnƒ`ƒF‚‹ƒbƒN")
-                await interaction.response.edit_message(content="I—¹‚µ‚Ä‚¢‚é‚İ‚½‚¢\n‚Ü‚½—V‚ñ‚Å‚ËI",view=None,delete_after=2)
-
-            #n‚ß‚éƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Ìˆ—
-            elif button_custom_id == "start_button":
-                logger.info("ƒXƒ^[ƒgƒ{ƒ^ƒ“ˆ—")
-                select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
-                values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)
-            
-                if (len(resultData) == 0):
-                    #ƒf[ƒ^‚ª‚¢‚È‚©‚Á‚½‚ç
-                    insert_query="INSERT INTO BOTSEQTABLE(guild_id,channel_id,start_up_flg,start_up_time_stamp) VALUES(%s,%s,True,cast(now() as datetime))"
-                    queryDb.quryexcute(insert_query,values)
-
-                else:
-                    update_query="UPDATE BOTSEQTABLE SET start_up_flg = True,start_up_flg = True,start_up_time_stamp = cast(now() as datetime) WHERE guild_id = %s AND channel_id = %s"
-                    queryDb.quryexcute(update_query,values) 
-    
-                join_button = CreateButton(style=discord.ButtonStyle.primary, label="Q‰Á", custom_id="join_button")
-                end_button = CreateButton(style=discord.ButtonStyle.danger, label="I‚í‚éH", custom_id="end_button")
-
-                message_view.add_item(join_button)
-                message_view.add_item(end_button)
-                await interaction.response.edit_message(content="Q‰Á‚·‚é‚ğ‰Ÿ‚·‚ÆAŒ¾—t‚Ìu“o˜^vu•ÏXvuíœv‚ª‚Å‚«‚é‚æ \n I‚í‚é‚Æ‚«‚ÍuI‚í‚éHvƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚ËII",view=message_view)
-                #await message.edit("Q‰Á‚·‚é‚ğ‰Ÿ‚·‚ÆAŒ¾—t‚Ìu“o˜^vu•ÏXvuíœv‚ª‚Å‚«‚é‚æ",view=start_view)
-
-            elif button_custom_id == "end_button":
-                logger.info("I—¹ƒ{ƒ^ƒ“ˆ—")
-                #ƒXƒ^[ƒgŒã‚ÌŠm”F
-                start_button = CreateButton(style=discord.ButtonStyle.primary, label="‚Ü‚¾I‚í‚ç‚È‚¢I", custom_id="start_button")
-                final_end_button = CreateButton(style=discord.ButtonStyle.danger, label="I‚í‚é‚æI", custom_id="final_end_button")
-            
-                message_view.add_item(start_button)
-                message_view.add_item(final_end_button)
-
-                await interaction.response.edit_message(content="–{“–‚ÉI‚í‚éH",view=message_view)
-
-            #ÅII—¹ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚ç
-            elif button_custom_id == "final_end_button":
-                #await interaction.message.delete()    #‚â‚ß‚éƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚çƒƒbƒZ[ƒW‚ğíœ‚µAƒƒbƒZ[ƒW•\¦
-                logger.info("C—¹Šm”Fƒ{ƒ^ƒ“ˆ—")
-                embed = discord.Embed(title="“o˜^‚³‚ê‚Ä‚¢‚éƒ[ƒh", description="(l''¤M)‚ ‚è‚ª‚Æ‚¤™I‚Ü‚½—V‚ñ‚Å‚ËI\n¡“ú‚Ìˆê——‚Í‚±‚¿‚çI", color=0x00ff7f)
-
-                select_query = ""
-                select_query = "SELECT word,create_user,use_user FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND delete_flg = False AND enable_flg = False"
-                values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)       
-
-
-                if(len(resultData) == 0):
-                    await interaction.response.edit_message(content="(l''¤M)‚ ‚è‚ª‚Æ‚¤™I‚Ü‚½—V‚ñ‚Å‚Ë\n‚²‚ß‚ñ‚ËBŠm”F‚·‚éŒ¾—t‚ª‚È‚¢‚æI" ,view=None)
-                else:
-                    value = ["","",""]
-                    for data in resultData:
-                        value[0] = value[0] + data[0] +"\n"
-                        value[1] = value[1] + data[1] +"\n"
-                        if data[2] == None:
-                            value[2] = value[2] + "\n"
-                        else:
-                            value[2] = value[2] + data[2] +"\n"
-
-                    embed.add_field(name="“o˜^‚³‚ê‚½ƒ[ƒh", value=value[0],inline=True)
-                    embed.add_field(name="“o˜^‚µ‚½l", value=value[1],inline=True)
-                    embed.add_field(name="ƒ[ƒh‚ğg‚Á‚½l", value=value[2],inline=True)
-                    await interaction.response.edit_message(content="",embed=embed,view=None)
-
-                update_query = ""
-                update_query = "UPDATE BOTSEQTABLE SET start_up_flg = False, start_up_time_stamp = null WHERE guild_id = %s AND channel_id = %s"
-                resultData = queryDb.quryexcute(update_query,values)
-
-                update_query = ""
-                update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
-                resultData = queryDb.quryexcute(update_query,values)
-
-            #‚â‚ß‚éƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Ìˆ—
-            elif button_custom_id == 'cancel_button':
-                logger.info("‚â‚ß‚éƒ{ƒ^ƒ“ˆ—")
-                #await interaction.message.delete()    #‚â‚ß‚éƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚çƒƒbƒZ[ƒW‚ğíœ‚µAƒƒbƒZ[ƒW•\¦
-                await interaction.response.edit_message(content="I—¹‚µ‚½‚æI",view=None,delete_after=2)
-
-            #Q‰Áƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Ìˆ—
-            elif button_custom_id == "join_button":
-                logger.info("Q‰Áƒ{ƒ^ƒ“ˆ—")
-                regist_button = CreateButton(style=discord.ButtonStyle.success, label="“o˜^", custom_id="regist_button")
-                update_button = CreateButton(style=discord.ButtonStyle.primary, label="XV", custom_id="update_button")
-                delete_button = CreateButton(style=discord.ButtonStyle.danger, label="íœ", custom_id="delete_button")
-                check_button = CreateButton(style=discord.ButtonStyle.primary, label="Šm”F", custom_id="check_button")
-                get_button = CreateButton(style=discord.ButtonStyle.gray, label="ƒ[ƒhƒQƒbƒgI", custom_id="get_button")
-                exit_button = CreateButton(style=discord.ButtonStyle.gray, label="“o˜^‚ğI‚í‚é", custom_id="exit_button")
-            
-                message_view.add_item(regist_button)
-                message_view.add_item(update_button)
-                message_view.add_item(delete_button)
-                message_view.add_item(check_button)
-                message_view.add_item(get_button)
-
-                await interaction.response.send_message("D‚«‚ÈŒ¾—t‚Ìu“o˜^vuXVvuíœv‚ª‚Å‚«‚é‚æI",view=message_view,ephemeral=True)
-        
-            #“o˜^ƒ{ƒ^ƒ“
-            elif button_custom_id == "regist_button":
-                logger.info("“o˜^ƒ{ƒ^ƒ“ˆ—")
-                regist_modal = CRUDModal(title="D‚«‚ÈŒ¾—t‚ğ“o˜^‚µ‚æ‚¤I")
-                regist_input = TextInput(label = "D‚«‚ÈŒ¾—t‚ğ“ü—Í‚µ‚Ä‚Ë",style = discord.TextStyle.short ,custom_id = "regist_input",placeholder = "Œ¾—t‚ğ“ü—Í",required  = True)
-
-                regist_modal.add_item(regist_input)
-                await interaction.response.send_modal(regist_modal)
-
-            #XVƒ{ƒ^ƒ“
-            elif button_custom_id == "update_button":
-                logger.info("XVˆ—")
-                updata_select = SelectCustom(placeholder="“o˜^ƒ[ƒh",custom_id = "update_select")
-
-                select_query = "SELECT id,word FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND select_flg = False AND delete_flg = False AND enable_flg = False"
-                values = (guidId,channnelId,userId)
-                resultData = queryDb.quryexcute(select_query,values)
-                if(len(resultData) == 0):
-                    await interaction.response.send_message("XV‚·‚éŒ¾—t‚ª‚È‚¢‚æI",ephemeral=True,delete_after=2)
-                else:
-                    output_message = ""
-                    for i in range(len(resultData)):
-
-                        updata_select.add_option(value=resultData[i][0],label=resultData[i][1],description="",)
-
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="ƒLƒƒƒ“ƒZƒ‹", custom_id="select_cancel_button")
-                    message_view.add_item(updata_select)
-                    message_view.add_item(cancel_button)
-
-                    await interaction.response.send_message("XV‚·‚éŒ¾—t‚ğ‘I‚ñ‚Å‚ËI", view=message_view,ephemeral  = True)
-
-            #íœƒ{ƒ^ƒ“
-            elif button_custom_id == "delete_button":
-                logger.info("íœƒ{ƒ^ƒ“ˆ—")
-                delete_select = SelectCustom(placeholder="“o˜^ƒ[ƒh",custom_id = "delete_select")
-                #===============
-                select_query = "SELECT id,word FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND select_flg = False AND delete_flg = False AND enable_flg = False"
-                values = (guidId,channnelId,userId)
-                resultData = queryDb.quryexcute(select_query,values)
-
-                if(len(resultData) == 0):
-                    await interaction.response.send_message("íœ‚·‚é‚·‚éŒ¾—t‚ª‚È‚¢‚æI",ephemeral=True,delete_after=2)
-                else:
-                    output_message = ""
-                    for i in range(len(resultData)):
-
-                        delete_select.add_option(value=resultData[i][0],label=resultData[i][1],description="",)
-                #================================================
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="ƒLƒƒƒ“ƒZƒ‹", custom_id="select_cancel_button")
-                    message_view.add_item(delete_select)
-                    message_view.add_item(cancel_button)
-
-                    await interaction.response.send_message("íœ‚·‚éŒ¾—t‚ğ‘I‚ñ‚Å‚ËI", view=message_view,ephemeral  = True)
-
-
-            #Šm”Fƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚ç
-            elif button_custom_id == "check_button":
-                logger.info("Šm”Fƒ{ƒ^ƒ“ˆ—")
-                embed = discord.Embed(title="‚ ‚È‚½‚Ì“o˜^‚µ‚½ƒ[ƒh", description="‚ ‚È‚½‚Ì“o˜^‚µ‚½ƒ[ƒh‚ğŠm”F‚·‚é‚æI", color=0xd2691e)
-
-                select_query = "SELECT id,word,select_flg FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND delete_flg = False AND enable_flg = False"
-                values = (guidId,channnelId,userId)
-                resultData = queryDb.quryexcute(select_query,values)
-
-                if(len(resultData) == 0):
-                    await interaction.response.send_message("Šm”F‚·‚éŒ¾—t‚ª‚È‚¢‚æI",ephemeral=True,delete_after=2)
-                else:
-                    output_message = ""
-                    for i in range(len(resultData)):
-                        output_message = output_message + str(i + 1) + "F" + resultData[i][1] + "@"
-                        if resultData[i][2] == 1:
-                            output_message = output_message + "‚·‚Å‚É’N‚©‚ªg‚Á‚½‚İ‚½‚¢I"
-                        output_message = output_message + "\n"
-
-                    embed.add_field(name="“o˜^‚µ‚½ƒ[ƒh", value=output_message)
-                
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="•Â‚¶‚é", custom_id="select_cancel_button")
-                    message_view.add_item(cancel_button)
-                    await interaction.response.send_message(embed=embed,view=message_view,ephemeral  = True)
-
-            #Œ¾—tƒQƒbƒgII
-            elif button_custom_id == "get_button":
-                logger.info("ƒ[ƒhƒQƒbƒgƒ{ƒ^ƒ“ˆ—")
-                embed = discord.Embed(title="‚ ‚È‚½‚Ìƒ[ƒh‚ÍEEE", description="‚ ‚È‚½‚Ìƒ[ƒh‚Í‚±‚ê‚¾‚æI\n–Ê”’‚¢Œ¾—t‚ª—ˆ‚½‚©‚ÈH", color=0x00bfff)
-
-                select_query = "SELECT id,word FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND select_flg = False AND delete_flg = False AND enable_flg = False"
-                values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)
-
-                #ƒT[ƒo[ID‚ğæ“¾
-                logging.info("ƒT[ƒo[F" + guidId + "@ƒ†[ƒU[F" + userId + "‚É‚æ‚Á‚ÄŒ¾—tŠm”Fˆ—ƒRƒ}ƒ“ƒh‚ª‘—M‚³‚ê‚Ü‚µ‚½")
-
-                if(len(resultData) == 0):
-                    await interaction.response.send_message("æ“¾‚·‚éŒ¾—t‚ª‚È‚¢‚æI",ephemeral=True,delete_after=2)
-                else:
-
-                    get_choice = random.choice(resultData)
-                    get_id = get_choice[0]
-                    get_word = get_choice[1]
-
-                    update_query = "UPDATE WORDTABLE SET select_flg = True, use_user = %s,use_user_id = %s WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND id = %s"
-                    values = (userName,userId,guidId,channnelId,int(get_choice[0]))
-                    resultData = queryDb.quryexcute(update_query,values)
-
-                    embed.add_field(name="‚ ‚È‚½‚Ìƒ[ƒh", value=get_word,inline=False)
-
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="•Â‚¶‚é", custom_id="select_cancel_button")
-                    message_view.add_item(cancel_button)
-
-                    await interaction.response.send_message(embed = embed,view=message_view ,ephemeral=True)
-
-            elif button_custom_id == "select_cancel_button":
-                logger.info("ƒZƒŒƒNƒg‘I‘ğƒLƒƒƒ“ƒZƒ‹ˆ—")
-                await interaction.response.edit_message(content="ƒLƒƒƒ“ƒZƒ‹‚µ‚Ü‚µ‚½",embed = None,view = None,delete_after=2)
-
-            #except Exception as Err:
-            #    #print("Error, bot_id : " + bot_id + " channel_id : " + chat_id)
-            #    logging.error(Err)
-            logger.info("=====================================ƒ{ƒ^ƒ“ƒR[ƒ‹ƒoƒbƒNˆ—I—¹======================================")
-        except Exception as ex:
-           logging.warning(ex)
-           await interaction.response.edit_message(content="ˆ—‚É¸”s‚µ‚Ü‚µ‚½Bˆê“xI—¹‚µ‚Ü‚·B",embed=None,view=None,delete_after = 5)
-       
-        finally:
-            logger.info("=====================================ƒ{ƒ^ƒ“ƒNƒ‰ƒXˆ—I—¹======================================")
- 
-#Select‚ÌƒNƒ‰ƒX‚ğŒp³‚µ‚½ƒNƒ‰ƒX‚Åtype‚ğ•ÏX‚·‚é
-class SelectCustom(Select):
-    logger.info("=====================================selectƒNƒ‰ƒXˆ—======================================")
-    def __init__(self, placeholder,custom_id):
-        logger.info("=====================================selectƒRƒ“ƒXƒgƒ‰ƒNƒ^ˆ—======================================")
-        super().__init__(custom_id=custom_id)
-        logger.info("=====================================selectƒRƒ“ƒXƒgƒ‰ƒNƒ^ˆ—I—¹======================================")
-
-    async def callback(self, interaction: discord.Interaction):
-        logger.info("=====================================SelectƒR[ƒ‹ƒoƒbˆ—ŠJn======================================")
-        #DBÚ‘±‚ÌƒNƒ‰ƒX‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»
-        queryDb = DbQuery()
-
-        select_custom_id = interaction.data["custom_id"]
-        #ƒRƒ}ƒ“ƒh‘—Mƒ†[ƒU[‚Ìæ“¾
-        userId = f"{interaction.user}"
-        #ƒT[ƒo[ID‚Ìæ“¾
-        guidId = f"{interaction.guild_id}"
-        #ƒ`ƒƒƒ“ƒlƒ‹ID‚Ìæ“¾
-        channnelId = f"{interaction.channel_id}"
-
-        chengeid = interaction.data["values"][0]
-
-        if select_custom_id == "update_select":
-            
-            update_modal = CRUDModal(title="Œ¾—t‚ğXV‚µ‚Ä‚Ë")
-            update_input = TextInput(label = "D‚«‚ÈŒ¾—t‚ğ“ü—Í‚µ‚Ä‚Ë",style = discord.TextStyle.short ,custom_id = "update_input@" + str(chengeid) ,placeholder = "Œ¾—t‚ğ“ü—Í",required  = True)
-            update_modal.add_item(update_input)
-
-            await interaction.response.send_modal(update_modal)
-
-        elif select_custom_id == "delete_select":
-            update_query = "UPDATE WORDTABLE SET delete_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
-
-            values = (guidId,channnelId,userId,chengeid)
-            resultData = queryDb.quryexcute(update_query,values)
-
-            await interaction.response.edit_message(content="ƒf[ƒ^‚ğíœ‚µ‚½‚æI",view=None,delete_after=2)
-        logger.info("=====================================SelectƒR[ƒ‹ƒoƒbƒNˆ—I—¹======================================")
-    logger.info("=====================================selectƒNƒ‰ƒXˆ—I—¹======================================")
-
-#ƒ‚[ƒ_ƒ‹ƒNƒ‰ƒX‚ğŒp³‚µ‚½ƒNƒ‰ƒX‚Ìì¬
-class CRUDModal(Modal, title='Questionnaire Response'):
-    logger.info("=====================================ƒ‚[ƒ_ƒ‹ƒNƒ‰ƒXˆ—======================================")
-    async def on_submit(self, interaction: discord.Interaction):
-        logger.info("=====================================ƒ‚[ƒ_ƒ‹‘—Mƒ{ƒ^ƒ“ˆ—ŠJn======================================")
-        #await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
-    #ƒRƒ}ƒ“ƒh‘—Mƒ†[ƒU[‚Ìæ“¾
-
-        userId = f"{interaction.user}"
-        userName = f"{interaction.user.display_name}"
-        #ƒT[ƒo[ID‚Ìæ“¾
-        guidId = f"{interaction.guild_id}"
-        #ƒ`ƒƒƒ“ƒlƒ‹ID‚Ìæ“¾
-        channnelId = f"{interaction.channel_id}"
-
-        intaraction_data = interaction.data["components"][0]["components"][0]
-        regist_word = intaraction_data["value"]
-        modal_custom_id = intaraction_data["custom_id"]
-
-        #XV—pID‚ğæ“¾
-        split_id = modal_custom_id.split('@')
-        modal_custom_id = split_id[0]
-        if len(split_id) > 1:
-            get_data_id = split_id[1]
-
-        #DBÚ‘±‚ÌƒNƒ‰ƒX‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»
-        queryDb = DbQuery()
-
-        if len(regist_word) > 100:
-            await interaction.response.send_message(f'{regist_word} \n‚Í100•¶š‚ğ’´‚¦‚Ä‚é‚æII\n100•¶šˆÈ“à‚Å“o˜^‚µ‚Ä‚ËI', ephemeral=True,delete_after=2)
-
-        else:
-
-            if modal_custom_id == "regist_input":
-                #“o˜^ƒ‚[ƒ_ƒ‹‚Å‘—M‚µ‚½‚ç
-                #“o˜^ˆ—==
-                select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
-                values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)
-
-
-                insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
-                values = (int(resultData[0][0]),regist_word,userId,userName);
-
-                queryDb.quryexcute(insert_query,values);
-
-                #==========ªª====================
-
-                await interaction.response.send_message(f'{regist_word} “o˜^‚Å‚«‚½‚æI', ephemeral=True,delete_after=2)
-
-            elif modal_custom_id == "update_input":
-                #XV‚ª‘I‘ğ‚³‚ê‚½‚ç
-                update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
-
-                values = (regist_word,guidId,channnelId,userId,get_data_id)
-                resultData = queryDb.quryexcute(update_query,values)
-
-                await interaction.response.edit_message(content="•ÏX‚³‚ê‚Ü‚µ‚½",view=None,delete_after=2)
-        logger.info("=====================================ƒ‚[ƒ_ƒ‹‘—Mƒ{ƒ^ƒ“ˆ—I—¹======================================")
-    logger.info("=====================================ƒ‚[ƒ_ƒ‹ƒNƒ‰ƒXˆ—I—¹======================================")
 
 
 @client.event
 async def on_ready():
-    logger.info("=====================================ƒ{ƒbƒgŠJnˆ—======================================")
+    logger.info("=====================================ãƒœãƒƒãƒˆé–‹å§‹å‡¦ç†======================================")
     view = CreateView()
     logger.info(f'We have logged in as {client.user}')
     await tree.sync()
-    logger.info("=====================================ŠJnˆ—I—¹======================================")
+    logger.info("=====================================é–‹å§‹å‡¦ç†çµ‚äº†======================================")
 
-#=============================================================ƒeƒXƒgƒRƒ}ƒ“ƒh‚Å‚·
-#ƒRƒ}ƒ“ƒh“Ç‚İæ‚è
-@tree.command(name = "start",description="ƒXƒ^[ƒg‚·‚é‚æI")
+#=============================================================ãƒ†ã‚¹ãƒˆã‚³ãƒãƒ³ãƒ‰ã§ã™
+#ã‚³ãƒãƒ³ãƒ‰èª­ã¿å–ã‚Š
+@tree.command(name = "start",description="ã‚¹ã‚¿ãƒ¼ãƒˆã™ã‚‹ã‚ˆï¼")
 async def start(interaction: discord.Interaction):  
-    logger.info("=====================================startƒRƒ}ƒ“ƒhæ“¾ˆ—======================================")
+    logger.info("=====================================startã‚³ãƒãƒ³ãƒ‰å–å¾—å‡¦ç†======================================")
 
-    #ƒRƒ}ƒ“ƒh‘—Mƒ†[ƒU[‚Ìæ“¾
+    #ã‚³ãƒãƒ³ãƒ‰é€ä¿¡ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®å–å¾—
     userId = f"{interaction.user}"
-    #ƒT[ƒo[ID‚Ìæ“¾
+    #ã‚µãƒ¼ãƒãƒ¼IDã®å–å¾—
     guidId = f"{interaction.guild_id}"
-    #ƒ`ƒƒƒ“ƒlƒ‹ID‚Ìæ“¾
+    #ãƒãƒ£ãƒ³ãƒãƒ«IDã®å–å¾—
     channnelId = f"{interaction.channel_id}"
-    #=====DB‚Ì€”õ
+    #=====DBã®æº–å‚™
     queryDb = DbQuery()
 
     try:
-        logger.info("=====================================‚c‚aÚ‘±EŠeíŠJnƒ{ƒ^ƒ“•\¦ˆ—ŠJn======================================")
-        #DB‚ÖÚ‘±‚µ‚Ü‚·B
+        logger.info("=====================================ï¼¤ï¼¢æ¥ç¶šãƒ»å„ç¨®é–‹å§‹ãƒœã‚¿ãƒ³è¡¨ç¤ºå‡¦ç†é–‹å§‹======================================")
+        #DBã¸æ¥ç¶šã—ã¾ã™ã€‚
         select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
         values = (guidId,channnelId)
         resultData = queryDb.quryexcute(select_query,values)
         
-        # ƒ{ƒ^ƒ“‚ğŠÜ‚ŞViewiƒrƒ…[j‚ğì¬‚µ‚Ü‚·
-        #Viewi“y‘ä‚Ìì¬j
+        # ãƒœã‚¿ãƒ³ã‚’å«ã‚€Viewï¼ˆãƒ“ãƒ¥ãƒ¼ï¼‰ã‚’ä½œæˆã—ã¾ã™
+        #Viewï¼ˆåœŸå°ã®ä½œæˆï¼‰
         view = CreateView()
 
-        #ƒ{ƒbƒg‚ª‹N“®‚µ‚Ä‚¢‚é‚©Šm”F ‹N“®‚µ‚Ä‚¢‚È‚©‚Á‚½‚ç
+        #ãƒœãƒƒãƒˆãŒèµ·å‹•ã—ã¦ã„ã‚‹ã‹ç¢ºèª èµ·å‹•ã—ã¦ã„ãªã‹ã£ãŸã‚‰
         if len(resultData) == 0:
-            #ƒ{ƒ^ƒ“‚Ìì¬ style:ƒ{ƒ^ƒ“‚Ìí—Ş label:ƒ{ƒ^ƒ“‚Ì–¼‘O custom_idFƒ{ƒ^ƒ“‚ÌID
-            okbutton = CreateButton(style=discord.ButtonStyle.primary, label="n‚ß‚éI", custom_id="start_button")
-            cancelbutton = CreateButton(style=discord.ButtonStyle.danger, label="‚â‚Á‚Ï‚è‚â‚ß‚éI", custom_id="cancel_button")
-            #view‚Éƒ{ƒ^ƒ“‚ğ’Ç‰Á
+            #ãƒœã‚¿ãƒ³ã®ä½œæˆ style:ãƒœã‚¿ãƒ³ã®ç¨®é¡ label:ãƒœã‚¿ãƒ³ã®åå‰ custom_idï¼šãƒœã‚¿ãƒ³ã®ID
+            okbutton = CreateButton(style=discord.ButtonStyle.primary, label="å§‹ã‚ã‚‹ï¼", custom_id="start_button")
+            cancelbutton = CreateButton(style=discord.ButtonStyle.danger, label="ã‚„ã£ã±ã‚Šã‚„ã‚ã‚‹ï¼", custom_id="cancel_button")
+            #viewã«ãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
             view.add_item(okbutton)
             view.add_item(cancelbutton)
            
-            label = "Šy‚µ‚¢—V‚Ñ‚ğn‚ß‚Ü‚·‚©H"
+            label = "æ¥½ã—ã„éŠã³ã‚’å§‹ã‚ã¾ã™ã‹ï¼Ÿ"
             #view.start_message()
 
         else:
-            join_button = CreateButton(style=discord.ButtonStyle.primary, label="Q‰Á", custom_id="join_button")
-            end_button = CreateButton(style=discord.ButtonStyle.danger, label="I‚í‚éH", custom_id="end_button")
-            all_check_button = CreateButton(style=discord.ButtonStyle.gray, label="¡“ú‚Ìƒ[ƒhˆê——", custom_id="all_check_button")
-            label = "‚·‚Å‚ÉŠJn‚³‚ê‚Ä‚¢‚é‚æI\nQ‰Á‚·‚é‚ğ‰Ÿ‚·‚ÆAŒ¾—t‚Ìu“o˜^vu•ÏXvuíœv‚ª‚Å‚«‚é‚æ \n I‚í‚é‚Æ‚«‚ÍuI‚í‚éHvƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚ËII"
-            #view‚Éƒ{ƒ^ƒ“‚ğ’Ç‰Á
+            join_button = CreateButton(style=discord.ButtonStyle.primary, label="å‚åŠ ", custom_id="join_button")
+            end_button = CreateButton(style=discord.ButtonStyle.danger, label="çµ‚ã‚ã‚‹ï¼Ÿ", custom_id="end_button")
+            all_check_button = CreateButton(style=discord.ButtonStyle.gray, label="ä»Šæ—¥ã®ãƒ¯ãƒ¼ãƒ‰ä¸€è¦§", custom_id="all_check_button")
+            label = "ã™ã§ã«é–‹å§‹ã•ã‚Œã¦ã„ã‚‹ã‚ˆï¼\nå‚åŠ ã™ã‚‹ã‚’æŠ¼ã™ã¨ã€è¨€è‘‰ã®ã€Œç™»éŒ²ã€ã€Œå¤‰æ›´ã€ã€Œå‰Šé™¤ã€ãŒã§ãã‚‹ã‚ˆ \n çµ‚ã‚ã‚‹ã¨ãã¯ã€Œçµ‚ã‚ã‚‹ï¼Ÿã€ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã­ï¼ï¼"
+            #viewã«ãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
             view.add_item(join_button)
             view.add_item(end_button)
 
-        # ƒƒbƒZ[ƒW‚Éƒ{ƒ^ƒ“‚ğ•\¦‚µ‚Ü‚·
+        # ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã«ãƒœã‚¿ãƒ³ã‚’è¡¨ç¤ºã—ã¾ã™
         await interaction.response.send_message(label, view=view)
 
     except Exception as ex:
-       logging.warning(f"ƒGƒ‰[î•ñF{ex}")
-       await interaction.response.send_message("‹N“®‚É¸”s‚µ‚½‚æIŠÔ‚ğ‚¨‚¢‚Ä‚à‚¤ˆê“x‚µ‚Ä‚İ‚ÄI")
+       logger.warning(f"ã‚¨ãƒ©ãƒ¼æƒ…å ±ï¼š{ex}")
+       await interaction.response.send_message("èµ·å‹•ã«å¤±æ•—ã—ãŸã‚ˆï¼æ™‚é–“ã‚’ãŠã„ã¦ã‚‚ã†ä¸€åº¦è©¦ã—ã¦ã¿ã¦ï¼")
     finally:
         client.add_view(view = view)
-        logger.info("=====================================startƒRƒ}ƒ“ƒhˆ—I—¹======================================")
+        logger.info("=====================================startã‚³ãƒãƒ³ãƒ‰å‡¦ç†çµ‚äº†======================================")
 
 
-@tree.command(name="help",description="‚´‚Á‚­‚è‚Æ‚µ‚½à–¾‚¾‚æI")
+@tree.command(name="help",description="ã–ã£ãã‚Šã¨ã—ãŸèª¬æ˜ã ã‚ˆï¼")
 async def redme_command(interaction: discord.Interaction):
         await interaction.response.send_message("""
-/startFD‚«‚ÈŒ¾—t‚ğ“o˜^ŠJnƒRƒ}ƒ“ƒh‚¾‚æI
-ŠJn‚µ‚½‚çƒ{ƒ^ƒ“‚ğƒ|ƒ`ƒ|ƒ`‰Ÿ‚µ‚Ä“o˜^‚µ‚½‚èXV‚µ‚½‚èíœ‚µ‚½‚è‚µ‚Ä‚ËI
-‚İ‚ñ‚È‚ªƒ[ƒh‚Ì“o˜^‚ªI‚í‚Á‚½‚çƒ[ƒh‚ğæ“¾‚µ‚Ä‚ËI
-I—¹‚·‚é‚Æ“o˜^‚³‚ê‚½’N‚ª‚Ç‚Ìƒ[ƒh‚ğ“o˜^‚µ‚½‚Ì‚©B
-‚¾‚ê‚ª‚Ç‚Ìƒ[ƒh‚ğg‚Á‚½‚Ì‚ª‚ªŒ©‚ê‚éˆê——‚ª•\¦‚³‚ê‚é‚æB
-íœ‚³‚ê‚½ƒf[ƒ^‚àŒ©‚ê‚é‚©‚çA‹C‚ğ•t‚¯‚Ä‚Ë(;'Í')
-‰½‚©‚í‚©‚ç‚È‚¢‚±‚Æ‚ª‚ ‚Á‚½‚çAƒŠƒ“ƒS‚Ü‚Å˜A—‚µ‚Ä‚ËI
+/startï¼šå¥½ããªè¨€è‘‰ã‚’ç™»éŒ²é–‹å§‹ã‚³ãƒãƒ³ãƒ‰ã ã‚ˆï¼
+é–‹å§‹ã—ãŸã‚‰ãƒœã‚¿ãƒ³ã‚’ãƒãƒãƒãƒæŠ¼ã—ã¦ç™»éŒ²ã—ãŸã‚Šæ›´æ–°ã—ãŸã‚Šå‰Šé™¤ã—ãŸã‚Šã—ã¦ã­ï¼
+ã¿ã‚“ãªãŒãƒ¯ãƒ¼ãƒ‰ã®ç™»éŒ²ãŒçµ‚ã‚ã£ãŸã‚‰ãƒ¯ãƒ¼ãƒ‰ã‚’å–å¾—ã—ã¦ã­ï¼
+çµ‚äº†ã™ã‚‹ã¨ç™»éŒ²ã•ã‚ŒãŸèª°ãŒã©ã®ãƒ¯ãƒ¼ãƒ‰ã‚’ç™»éŒ²ã—ãŸã®ã‹ã€‚
+ã ã‚ŒãŒã©ã®ãƒ¯ãƒ¼ãƒ‰ã‚’ä½¿ã£ãŸã®ãŒãŒè¦‹ã‚Œã‚‹ä¸€è¦§ãŒè¡¨ç¤ºã•ã‚Œã‚‹ã‚ˆã€‚
+å‰Šé™¤ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚‚è¦‹ã‚Œã‚‹ã‹ã‚‰ã€æ°—ã‚’ä»˜ã‘ã¦ã­(;'âˆ€')
 """)
 
-logger.info("=====================================runˆ—ŠJn======================================")
-client.run(TOKEN,log_handler=None, log_level=logging.DEBUG)
-logger.info("=====================================runˆ—I—¹======================================")
+logger.info("=====================================runå‡¦ç†é–‹å§‹======================================")
+client.run(TOKEN,log_handler=None)
+logger.info("=====================================runå‡¦ç†çµ‚äº†======================================")

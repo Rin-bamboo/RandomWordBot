@@ -21,10 +21,21 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="backup_code.py" />
+    <Compile Include="button_sub.py" />
+    <Compile Include="config.py" />
     <Compile Include="db_setup.py" />
+    <Compile Include="log_setting.py" />
+    <Compile Include="modal_sub.py" />
     <Compile Include="RandomWordBot.py" />
-    <Compile Include="test_code.py" />
+    <Compile Include="select_sub.py" />
+    <Compile Include="view_sub.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="img\start.png" />
+    <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="img\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
