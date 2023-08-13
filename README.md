@@ -15,17 +15,19 @@ DB：MySQL<br/>
 ※各種Pytho・MySQLの導入・BOTの起動方法等は先駆者の解説を参考にお願いします。こちらでは割愛させていただきます。
 
 
-`config.py` を作成し、RandomWordBot.pyと同じディレクトリ(フォルダ)に保存してください
+~~`config.py` を作成し、RandomWordBot.pyと同じディレクトリ(フォルダ)に保存してください~~
+.envに変更しました
 
-### 設定ファイルの準備
+### .envの準備
 作成する設定ファイルの中身
 ```python:config.py
-TOKEN = "自分のbotのトークン"
+BOT_TOKEN = "自分のbotのトークン"
 PASS="MySQLのパスワード"
 USER_NAME="MySQLのユーザー名"
 HOST="MySQLのホスト名"
 DB="MySQLのDB名"
-```
+``` 
+
 
 作成するDBの中身
 ```SQL:create.sql
