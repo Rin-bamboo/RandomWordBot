@@ -13,13 +13,15 @@ load_dotenv()
 
 #=========テキストファイルの読み込み============
 path = 'text/help.txt'  #ヘルプファイルの読み込み
+try:
+    f = open(path,encoding='utf-8')
+    helptext = f.read()
+    print(helptext)
+    # <class '_io.TextIOWrapper'>
 
-f = open(path,encoding='utf-8')
-helptext = f.read()
-print(helptext)
-# <class '_io.TextIOWrapper'>
-
-f.close()
+    f.close()
+except:
+    helptext = "テキストが読み込めませんでした"
 
 #=========discord.pyの読み込み=================
 
