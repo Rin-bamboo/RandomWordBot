@@ -7,32 +7,34 @@
 #半角英数の記号を入れるとSQLエラー
 
 #設定ファイルの読み込み import
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-from importlib.abc import TraversableResources
-from operator import truediv
-from pickle import NONE
-from tarfile import RECORDSIZE
-import config
+#from importlib.abc import TraversableResources
+#from operator import truediv
+#from pickle import NONE
+#from tarfile import RECORDSIZE
 
-import random
+#import random
 #=========discord.pyの読み込み=================
-from discord.ext import commands
+#from discord.ext import commands
 #from discord.ui import Button, View,TextInput,Modal,Select
 #from discord import Message,SelectOption,Guild
 import discord
 #スラッシュコマンドライブラリの読み込み
 from discord import app_commands
 #DB MYSQL
-import mysql.connector
+#import mysql.connector
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
-import logging
+#import logging
 logger = getLogger(__name__)
 
 #==============================================
 # 自分のBotのアクセストークンに置き換えてください（コンフィグファイルに退避させています）
-TOKEN = config.TOKEN        #トークン
+TOKEN = os.getenv('BOT_TOKEN')        #トークン
 
 ##=====================MYSQL設定
 from db_setup import DbQuery
@@ -44,17 +46,14 @@ from view_sub import CreateView #import CreateView
 
 
 #intentsオブジェクト（すべて取得）を生成
-intents = discord.Intents.all()
+intents = discord.Intents.default()
+intents.message_content = True  #メッセージインテンツの取得
+intents.typing = False          #タイピングインテンツは無視
+intents.presences = False       #プレゼンス(状態)インテンツは無視
+intents.guilds=True             #Guild(サーバー)のインテンツの取得
+intents.members = True          #メンバーインテンツの取得
 
 client = discord.Client(intents=intents)
-class Client_bot(discord.Client):
-    def __init__(self,intents=intents):
-        intents = discord.Intents.default()
-        intents.message_content = True
-
-        self.add_view(CreateView())
-
-#client = Client_bot(intents=intents)
 tree = app_commands.CommandTree(client)
     
 logger.info("=====================================各種設定読み込み終了======================================")

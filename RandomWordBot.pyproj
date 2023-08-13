@@ -31,6 +31,7 @@
     <Compile Include="view_sub.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".env" />
     <Content Include="img\start.png" />
     <Content Include="README.md" />
   </ItemGroup>
