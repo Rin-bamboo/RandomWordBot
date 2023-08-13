@@ -67,29 +67,33 @@ logger.info("=====================================各種設定読み込み終了
 @client.event
 async def on_ready():
     logger.info("=====================================ボット開始処理======================================")
-    view = CreateView()
-    logger.info(f'We have logged in as {client.user}')
-    await tree.sync()
-    logger.info("=====================================開始処理終了======================================")
+    try:
+        view = CreateView()
+        logger.info(f'We have logged in as {client.user}')
+        await tree.sync()
+    except Exception as ex:
+       logger.warning("BOT起動でエラーが発生しました")
+       logger.warning(f"エラー情報：{ex}")
+    finally:
+        logger.info("=====================================ボット開始処理終了======================================")
 
 #=============================================================テストコマンドです
 #コマンド読み取り
 @tree.command(name = "start",description="スタートするよ！")
 async def start(interaction: discord.Interaction):  
     logger.info("=====================================startコマンド取得処理======================================")
-
-    #コマンド送信ユーザーの取得
-    userId = f"{interaction.user}"
-    #サーバーIDの取得
-    guidId = f"{interaction.guild_id}"
-    #チャンネルIDの取得
-    channnelId = f"{interaction.channel_id}"
-    #=====DBの準備
-    queryDb = DbQuery()
-
     try:
         logger.info("=====================================ＤＢ接続・各種開始ボタン表示処理開始======================================")
-        #DBへ接続します。
+
+        #コマンド送信ユーザーの取得
+        userId = f"{interaction.user}"
+        #サーバーIDの取得
+        guidId = f"{interaction.guild_id}"
+        #チャンネルIDの取得
+        channnelId = f"{interaction.channel_id}"
+        #=====DBの準備
+        queryDb = DbQuery()
+
         select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
         values = (guidId,channnelId)
         resultData = queryDb.quryexcute(select_query,values)

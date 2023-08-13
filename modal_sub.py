@@ -20,56 +20,61 @@ class CRUDModal(Modal, title='Questionnaire Response'):
         logger.info("=====================================モーダル送信ボタン処理開始======================================")
         #await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
     #コマンド送信ユーザーの取得
+        try:
+            userId = f"{interaction.user}"
+            userName = f"{interaction.user.display_name}"
+            #サーバーIDの取得
+            guidId = f"{interaction.guild_id}"
+            #チャンネルIDの取得
+            channnelId = f"{interaction.channel_id}"
 
-        userId = f"{interaction.user}"
-        userName = f"{interaction.user.display_name}"
-        #サーバーIDの取得
-        guidId = f"{interaction.guild_id}"
-        #チャンネルIDの取得
-        channnelId = f"{interaction.channel_id}"
+            intaraction_data = interaction.data["components"][0]["components"][0]
+            regist_word = intaraction_data["value"]
+            modal_custom_id = intaraction_data["custom_id"]
 
-        intaraction_data = interaction.data["components"][0]["components"][0]
-        regist_word = intaraction_data["value"]
-        modal_custom_id = intaraction_data["custom_id"]
+            #更新用IDを取得
+            split_id = modal_custom_id.split('@')
+            modal_custom_id = split_id[0]
+            if len(split_id) > 1:
+                get_data_id = split_id[1]
 
-        #更新用IDを取得
-        split_id = modal_custom_id.split('@')
-        modal_custom_id = split_id[0]
-        if len(split_id) > 1:
-            get_data_id = split_id[1]
+            #DB接続のクラスをインスタンス化
+            queryDb = DbQuery()
 
-        #DB接続のクラスをインスタンス化
-        queryDb = DbQuery()
+            if len(regist_word) > 100:
+                await interaction.response.send_message(f'{regist_word} \nは100文字を超えてるよ！！\n100文字以内で登録してね！', ephemeral=True,delete_after=2)
 
-        if len(regist_word) > 100:
-            await interaction.response.send_message(f'{regist_word} \nは100文字を超えてるよ！！\n100文字以内で登録してね！', ephemeral=True,delete_after=2)
+            else:
 
-        else:
-
-            if modal_custom_id == "regist_input":
-                #登録モーダルで送信したら
-                #登録処理==
-                select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
-                values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)
+                if modal_custom_id == "regist_input":
+                    #登録モーダルで送信したら
+                    #登録処理==
+                    select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
+                    values = (guidId,channnelId)
+                    resultData = queryDb.quryexcute(select_query,values)
 
 
-                insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
-                values = (int(resultData[0][0]),regist_word,userId,userName);
+                    insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
+                    values = (int(resultData[0][0]),regist_word,userId,userName);
 
-                queryDb.quryexcute(insert_query,values);
+                    queryDb.quryexcute(insert_query,values);
 
-                #==========↑↑====================
+                    #==========↑↑====================
 
-                await interaction.response.send_message(f'{regist_word} 登録できたよ！', ephemeral=True,delete_after=2)
+                    await interaction.response.send_message(f'{regist_word} 登録できたよ！', ephemeral=True,delete_after=2)
 
-            elif modal_custom_id == "update_input":
-                #更新が選択されたら
-                update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
+                elif modal_custom_id == "update_input":
+                    #更新が選択されたら
+                    update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
 
-                values = (regist_word,guidId,channnelId,userId,get_data_id)
-                resultData = queryDb.quryexcute(update_query,values)
+                    values = (regist_word,guidId,channnelId,userId,get_data_id)
+                    resultData = queryDb.quryexcute(update_query,values)
 
-                await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
-        logger.info("=====================================モーダル送信ボタン処理終了======================================")
+                    await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
+        except Exception as ex:
+            logger.warning(f"エラー情報：{ex}")
+            await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
+        finally:
+            logger.info("=====================================モーダル送信ボタン処理終了======================================")
+
     logger.info("=====================================モーダルクラス処理終了======================================")
