@@ -261,7 +261,7 @@ class CreateButton(Button):
             
         except Exception as ex:
            logger.warning(ex)
-           await interaction.response.edit_message(content="処理に失敗しました。一度終了します。",embed=None,view=None,delete_after = 5)
+           await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
        
         finally:
             logger.info("=====================================ボタンコールバック処理終了======================================")
