@@ -1,41 +1,42 @@
-# -*- coding: Shift-JIS -*-
 import mysql.connector
-import config
 
-db_name=config.DB
-user_name=config.USER_NAME
-host_name=config.HOST
-user_password=config.PASS
+#è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ import
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-#=======================ƒƒOo—Íİ’è============================
+
+db_name = os.getenv('DB')
+user_name = os.getenv('USER_NAME')
+host_name = os.getenv('HOST')
+user_password = os.getenv('PASS')
+
+#=======================ãƒ­ã‚°å‡ºåŠ›è¨­å®š============================
 from log_setting import getLogger
 logger = getLogger(__name__)
 
-# MySQLÚ‘±î•ñ
+# MySQLæ¥ç¶šæƒ…å ±
 db_config = {
-    "host": host_name,  # ƒzƒXƒg–¼
-    "user": user_name,       # ƒ†[ƒU–¼
-    "password": user_password,  # ƒpƒXƒ[ƒh
-    "database": db_name  # ƒf[ƒ^ƒx[ƒX–¼
+    "host": host_name,  # ãƒ›ã‚¹ãƒˆå
+    "user": user_name,       # ãƒ¦ãƒ¼ã‚¶å
+    "password": user_password,  # ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
+    "database": db_name  # ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å
 }
 
 class DbQuery():
     def quryexcute(self,query,values):
         try:
-            # MySQLƒf[ƒ^ƒx[ƒX‚ÉÚ‘±
+            # MySQLãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«æ¥ç¶š
             connection = mysql.connector.connect(**db_config)
 
             if connection.is_connected():
-                # ƒo[ƒWƒ‡ƒ“î•ñ‚ğæ“¾
+                # ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã‚’å–å¾—
                 cursor = connection.cursor()
                 logger.info("Connected to MySQL Server")
 
-
-                #query="INSERT INTO botseqtable(guild_id,channel_id) VALUES(%s,%s)"
-                #values = (1076845818407026758,1076849137007472690)
                 cmpleate_query = cursor.execute(query,values)
-                logger.info(f"ƒNƒGƒŠî•ñF{query}")
-                logger.info(f"ƒf[ƒ^î•ñF{values}")
+                logger.info(f"ã‚¯ã‚¨ãƒªæƒ…å ±ï¼š{query}")
+                logger.info(f"ãƒ‡ãƒ¼ã‚¿æƒ…å ±ï¼š{values}")
 
                 query_value = cursor.fetchall()
                 connection.commit();
@@ -46,11 +47,11 @@ class DbQuery():
             print("Error:", e)
             logger.error(e)
             connection.rollback();
-            # ƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚Ìˆ—‚ğ‚±‚±‚É’Ç‰Á
-            # —á: ƒGƒ‰[ƒƒO‚Ìo—ÍAƒGƒ‰[ƒƒbƒZ[ƒW‚Ì’Ê’mA•Ê‚ÌƒAƒNƒVƒ‡ƒ“‚ÌÀs‚È‚Ç
+            # ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆã®å‡¦ç†ã‚’ã“ã“ã«è¿½åŠ 
+            # ä¾‹: ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã®å‡ºåŠ›ã€ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®é€šçŸ¥ã€åˆ¥ã®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®å®Ÿè¡Œãªã©
 
         finally:
-            # Ú‘±‚ğƒNƒ[ƒY
+            # æ¥ç¶šã‚’ã‚¯ãƒ­ãƒ¼ã‚º
             if connection is not None and connection.is_connected():
                 cursor.close()
                 connection.close()

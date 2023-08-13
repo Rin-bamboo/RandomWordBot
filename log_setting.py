@@ -1,6 +1,12 @@
+#設定ファイルの読み込み import
+import os
+from dotenv import load_dotenv
+load_dotenv()
+LOGFILE = os.getenv('LOGFILE')
+
+
 import logging
 import logging.handlers
-import config
 
 def getLogger(name):
     logger = logging.getLogger(name)
@@ -11,7 +17,7 @@ def getLogger(name):
     logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
     handler = logging.handlers.RotatingFileHandler(
-        filename=config.LOGFILE,
+        filename=LOGFILE,
         encoding='utf-8',
         maxBytes= 5 * 1024 * 1024,  # 5 MiB
         backupCount=5,  # Rotate through 5 files
