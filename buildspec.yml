@@ -11,17 +11,17 @@ phases:
   pre_build:
     commands:
       - echo "Running pre-build steps..."
-      # �����ɑO�����̃R�}���h��X�N���v�g��ǉ�
+      # ここに前処理のコマンドやスクリプトを追加
 
   build:
     commands:
       - echo "Building the project..."
-      # �����Ƀr���h�̃R�}���h��X�N���v�g��ǉ�
+      # ここにビルドのコマンドやスクリプトを追加
 
   post_build:
     commands:
       - echo "Running post-build steps..."
-      # �����Ɍ㏈���̃R�}���h��X�N���v�g��ǉ�
+      # ここに後処理のコマンドやスクリプトを追加
 
 artifacts:
   files:
