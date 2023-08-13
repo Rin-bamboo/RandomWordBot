@@ -32,11 +32,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".env" />
+    <Content Include="buildspec.yml" />
     <Content Include="img\start.png" />
     <Content Include="README.md" />
+    <Content Include="text\help.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="img\" />
+    <Folder Include="text\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
