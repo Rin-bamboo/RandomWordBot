@@ -11,16 +11,18 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-#from importlib.abc import TraversableResources
-#from operator import truediv
-#from pickle import NONE
-#from tarfile import RECORDSIZE
+#=========テキストファイルの読み込み============
+path = 'text/help.txt'  #ヘルプファイルの読み込み
 
-#import random
+f = open(path,encoding='utf-8')
+helptext = f.read()
+print(helptext)
+# <class '_io.TextIOWrapper'>
+
+f.close()
+
 #=========discord.pyの読み込み=================
-#from discord.ext import commands
-#from discord.ui import Button, View,TextInput,Modal,Select
-#from discord import Message,SelectOption,Guild
+
 import discord
 #スラッシュコマンドライブラリの読み込み
 from discord import app_commands
@@ -128,14 +130,7 @@ async def start(interaction: discord.Interaction):
 
 @tree.command(name="help",description="ざっくりとした説明だよ！")
 async def redme_command(interaction: discord.Interaction):
-        await interaction.response.send_message("""
-/start：好きな言葉を登録開始コマンドだよ！
-開始したらボタンをポチポチ押して登録したり更新したり削除したりしてね！
-みんながワードの登録が終わったらワードを取得してね！
-終了すると登録された誰がどのワードを登録したのか。
-だれがどのワードを使ったのがが見れる一覧が表示されるよ。
-削除されたデータも見れるから、気を付けてね(;'∀')
-""")
+        await interaction.response.send_message(helptext)
 
 logger.info("=====================================run処理開始======================================")
 client.run(TOKEN,log_handler=None)
