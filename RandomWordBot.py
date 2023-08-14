@@ -16,9 +16,6 @@ path = 'text/help.txt'  #ヘルプファイルの読み込み
 try:
     f = open(path,encoding='utf-8')
     helptext = f.read()
-    print(helptext)
-    # <class '_io.TextIOWrapper'>
-
     f.close()
 except:
     helptext = "テキストが読み込めませんでした"
@@ -61,8 +58,6 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
     
 logger.info("=====================================各種設定読み込み終了======================================")
-
-
 
 @client.event
 async def on_ready():
