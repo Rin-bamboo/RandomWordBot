@@ -22,17 +22,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="button_sub.py" />
-    <Compile Include="config.py" />
     <Compile Include="db_setup.py" />
     <Compile Include="log_setting.py" />
     <Compile Include="modal_sub.py" />
     <Compile Include="RandomWordBot.py" />
     <Compile Include="select_sub.py" />
+    <Compile Include="text\text.json" />
+    <Compile Include="text_input.py" />
     <Compile Include="view_sub.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".env" />
-    <Content Include="buildspec.yml" />
     <Content Include="img\start.png" />
     <Content Include="README.md" />
     <Content Include="text\help.txt" />

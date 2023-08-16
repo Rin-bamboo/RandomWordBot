@@ -8,17 +8,15 @@
 
 #設定ファイルの読み込み import
 import os
+from pickle import NONE
 from dotenv import load_dotenv
 load_dotenv()
 
+
+
 #=========テキストファイルの読み込み============
-path = 'text/help.txt'  #ヘルプファイルの読み込み
-try:
-    f = open(path,encoding='utf-8')
-    helptext = f.read()
-    f.close()
-except:
-    helptext = "テキストが読み込めませんでした"
+import text_input
+
 
 #=========discord.pyの読み込み=================
 
@@ -79,7 +77,7 @@ async def start(interaction: discord.Interaction):
     logger.info("=====================================startコマンド取得処理======================================")
     try:
         logger.info("=====================================ＤＢ接続・各種開始ボタン表示処理開始======================================")
-
+ 
         #コマンド送信ユーザーの取得
         userId = f"{interaction.user}"
         #サーバーIDの取得
@@ -105,7 +103,7 @@ async def start(interaction: discord.Interaction):
             #viewにボタンを追加
             view.add_item(okbutton)
             view.add_item(cancelbutton)
-           
+            
             label = "楽しい遊びを始めますか？"
             #view.start_message()
 
@@ -118,6 +116,7 @@ async def start(interaction: discord.Interaction):
             view.add_item(join_button)
             view.add_item(end_button)
 
+        client.add_view(view = view)
         # メッセージにボタンを表示します
         await interaction.response.send_message(label, view=view)
 
@@ -125,13 +124,14 @@ async def start(interaction: discord.Interaction):
        logger.warning(f"エラー情報：{ex}")
        await interaction.response.send_message("起動に失敗したよ！時間をおいてもう一度試してみて！")
     finally:
-        client.add_view(view = view)
+        
         logger.info("=====================================startコマンド処理終了======================================")
 
 
 @tree.command(name="help",description="ざっくりとした説明だよ！")
 async def redme_command(interaction: discord.Interaction):
-        await interaction.response.send_message(helptext)
+    help_text = text_input.inptfile("help")
+    await interaction.response.send_message(help_text)
 
 logger.info("=====================================run処理開始======================================")
 client.run(TOKEN,log_handler=None)
