@@ -41,7 +41,7 @@ class CreateButton(Button):
 
         try:
             if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button":
-                logger.info("開始チェｋック")
+                logger.info("開始チェック")
                 await interaction.response.edit_message(content="終了しているみたい\nまた遊んでね！",view=None,delete_after=2)
 
             #始めるボタンが押された時の処理
@@ -82,7 +82,7 @@ class CreateButton(Button):
             #最終終了ボタンが押されたら
             elif button_custom_id == "final_end_button":
                 #await interaction.message.delete()    #やめるボタンが押されたらメッセージを削除し、メッセージ表示
-                logger.info("修了確認ボタン処理")
+                logger.info("終了確認ボタン処理")
                 embed = discord.Embed(title="登録されているワード", description="(人''▽｀)ありがとう☆！また遊んでね！\n今日の一覧はこちら！", color=0x00ff7f)
 
                 select_query = ""
@@ -181,7 +181,7 @@ class CreateButton(Button):
                 resultData = queryDb.quryexcute(select_query,values)
 
                 if(len(resultData) == 0):
-                    await interaction.response.send_message("削除するする言葉がないよ！",ephemeral=True,delete_after=2)
+                    await interaction.response.send_message("削除する言葉がないよ！",ephemeral=True,delete_after=2)
                 else:
                     output_message = ""
                     for i in range(len(resultData)):
