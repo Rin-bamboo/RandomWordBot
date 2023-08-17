@@ -23,11 +23,11 @@
   <ItemGroup>
     <Compile Include="button_sub.py" />
     <Compile Include="db_setup.py" />
+    <Compile Include="end_list_output.py" />
     <Compile Include="log_setting.py" />
     <Compile Include="modal_sub.py" />
     <Compile Include="RandomWordBot.py" />
     <Compile Include="select_sub.py" />
-    <Compile Include="text\text.json" />
     <Compile Include="text_input.py" />
     <Compile Include="view_sub.py" />
   </ItemGroup>
@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="img\" />
+    <Folder Include="output_list\" />
     <Folder Include="text\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

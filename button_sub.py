@@ -1,4 +1,5 @@
 #===分割ファイルの読み込み
+from unittest import result
 from view_sub import CreateView #import CreateView
 from select_sub import SelectCustom #import SelectCustom
 from modal_sub import CRUDModal #import CRUDModal
@@ -9,6 +10,12 @@ from discord.ui import Button, View,TextInput,Modal,Select
 
 import random
 
+#================テーブル形式で出力
+#pip install flask　→表をHTMｌにする
+#pip install aspose-words　→HTMLを画像変換
+import aspose.words as aw
+
+import pandas as pd
 ##=====================MYSQL設定
 from db_setup import DbQuery
 
@@ -94,6 +101,50 @@ class CreateButton(Button):
                 if(len(resultData) == 0):
                     await interaction.response.edit_message(content="(人''▽｀)ありがとう☆！また遊んでね\nごめんね。確認する言葉がないよ！" ,view=None)
                 else:
+                    #Noneを空白に変換
+                    resultData = [(a, b, c if c is not None else '') for a, b, c in resultData]
+                    df = pd.DataFrame(resultData, columns=["登録されたワード","作った人","使った人"])
+                    # DataFrameをHTML表に変換
+                    html_table = df.to_html(classes='styled-table', index=False)
+                    # CSSスタイルを定義
+                    css_style = """ 
+                    <style>
+                      .styled-table {
+                        border-collapse: collapse;
+                        width: auto;
+                        font-size: 14px;
+                        text-align: center;
+                      }
+                      .styled-table th,
+                      .styled-table td {
+                        border: 1px solid black;
+                        padding-left: 20px;
+                        padding-right: 20px;
+                        padding-bottom: 5px;
+                        padding-top: 5px;
+                      }
+                    .styled-table th {
+                        background-color: lightblue;
+                        text-align: center;
+                    }
+                    </style>
+                    """
+
+                    # HTMLをファイルに出力
+                    with open('output_list/output_table.html', 'w') as f:
+                        f.write(css_style)
+                        f.write(html_table)
+                    f.close
+                    #doc = aw.Document("output_list/word_list.html")
+                    #imageOptions = aw.saving.ImageSaveOptions(aw.SaveFormat.JPEG)
+                    #imageOptions.jpeg_quality = 10
+                    #imageOptions.horizontal_resolution = 72
+
+                    #for page in range(0, doc.page_count):
+                    #    extractedPage = doc.extract_pages(page, 1)
+                    #    extractedPage.save(f"output_list/output_{page + 1}.jpg", imageOptions)
+
+                        
                     value = ["","",""]
                     for data in resultData:
                         value[0] = value[0] + data[0] +"\n"
