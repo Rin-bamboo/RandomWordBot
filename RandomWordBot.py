@@ -12,14 +12,10 @@ from pickle import NONE
 from dotenv import load_dotenv
 load_dotenv()
 
-
-
 #=========テキストファイルの読み込み============
 import text_input
 
-
 #=========discord.pyの読み込み=================
-
 import discord
 #スラッシュコマンドライブラリの読み込み
 from discord import app_commands
