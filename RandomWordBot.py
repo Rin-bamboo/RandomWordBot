@@ -66,7 +66,8 @@ async def on_ready():
         await tree.sync()
     except Exception as ex:
        logger.warning("BOT起動でエラーが発生しました")
-       logger.warning(f"エラー情報：{ex}")
+       logger.warning(f"エラー情報：{ex}",exc_info=True)
+
     finally:
         logger.info("=====================================ボット開始処理終了======================================")
 
@@ -121,7 +122,7 @@ async def start(interaction: discord.Interaction):
         await interaction.response.send_message(label, view=view)
 
     except Exception as ex:
-       logger.warning(f"エラー情報：{ex}")
+       logger.warning(f"エラー情報：{ex}",exc_info=True)
        await interaction.response.send_message("起動に失敗したよ！時間をおいてもう一度試してみて！")
     finally:
         

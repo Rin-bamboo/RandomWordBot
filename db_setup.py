@@ -25,6 +25,7 @@ db_config = {
 
 class DbQuery():
     def quryexcute(self,query,values):
+        logger.info("=============DB処理開始=================")
         try:
             # MySQLデータベースに接続
             connection = mysql.connector.connect(**db_config)
@@ -33,19 +34,17 @@ class DbQuery():
                 # バージョン情報を取得
                 cursor = connection.cursor()
                 logger.info("Connected to MySQL Server")
-
-                cmpleate_query = cursor.execute(query,values)
                 logger.info(f"クエリ情報：{query}")
                 logger.info(f"データ情報：{values}")
 
+                cmpleate_query = cursor.execute(query,values)
                 query_value = cursor.fetchall()
                 connection.commit();
 
                 return query_value
 
-        except mysql.connector.Error as e:
-            print("Error:", e)
-            logger.error(e)
+        except mysql.connector.Error as ex:
+            logger.warning(f"エラー情報：{ex}",exc_info=True)
             connection.rollback();
             # エラーが発生した場合の処理をここに追加
             # 例: エラーログの出力、エラーメッセージの通知、別のアクションの実行など
@@ -56,3 +55,4 @@ class DbQuery():
                 cursor.close()
                 connection.close()
                 logger.info("Connection closed")
+                logger.info("=============DB処理終了=================")
