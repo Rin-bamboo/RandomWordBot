@@ -5,7 +5,7 @@ logger = getLogger(__name__)
 def inptfile(name):
     logger.info("=========テキストファイルの読み込み============")
 
-    path = 'text/'+ name +'.txt'  #ヘルプファイルの読み込み
+    path = f"text/{name}.txt"  #ヘルプファイルの読み込み
     try:
         f = open(path,encoding='utf-8')
         logger.info(f)
