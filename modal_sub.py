@@ -72,7 +72,7 @@ class CRUDModal(Modal, title='Questionnaire Response'):
 
                     await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
         except Exception as ex:
-            logger.warning(f"エラー情報：{ex}",exc_info=True)
+            logger.warning(f"エラー情報：{ex}")
             await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
         finally:
             logger.info("=====================================モーダル送信ボタン処理終了======================================")
