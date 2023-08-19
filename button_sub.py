@@ -14,13 +14,8 @@ from discord import File
 import random
 
 #================テーブル形式で出力
-#pip install flask　→表をHTMｌにする
-#pip install imgkit　HTMLを画像に変換
-import aspose.words as aw
-
 import pandas as pd
 
-#DataFlameをimport matplotlib.pyplot as plt
 #pip install matplotlib
 #pip install japanize-matplotlib
 
