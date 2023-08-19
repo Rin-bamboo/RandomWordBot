@@ -153,6 +153,8 @@ class CreateButton(Button):
                 update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
+                os.remove(img_output_path)
+
             #やめるボタンが押された時の処理
             elif button_custom_id == 'cancel_button':
                 logger.info("やめるボタン処理")
