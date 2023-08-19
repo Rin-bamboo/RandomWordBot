@@ -107,34 +107,34 @@ class CreateButton(Button):
                     # DataFrameをHTML表に変換
                     html_table = df.to_html(classes='styled-table', index=False)
                     # CSSスタイルを定義
-                    css_style = """ 
-                    <style>
-                      .styled-table {
-                        border-collapse: collapse;
-                        width: auto;
-                        font-size: 14px;
-                        text-align: center;
-                      }
-                      .styled-table th,
-                      .styled-table td {
-                        border: 1px solid black;
-                        padding-left: 20px;
-                        padding-right: 20px;
-                        padding-bottom: 5px;
-                        padding-top: 5px;
-                      }
-                    .styled-table th {
-                        background-color: lightblue;
-                        text-align: center;
-                    }
-                    </style>
-                    """
+                    #css_style = """ 
+                    #<style>
+                    #  .styled-table {
+                    #    border-collapse: collapse;
+                    #    width: auto;
+                    #    font-size: 14px;
+                    #    text-align: center;
+                    #  }
+                    #  .styled-table th,
+                    #  .styled-table td {
+                    #    border: 1px solid black;
+                    #    padding-left: 20px;
+                    #    padding-right: 20px;
+                    #    padding-bottom: 5px;
+                    #    padding-top: 5px;
+                    #  }
+                    #.styled-table th {
+                    #    background-color: lightblue;
+                    #    text-align: center;
+                    #}
+                    #</style>
+                    #"""
 
-                    # HTMLをファイルに出力
-                    with open('output_list/output_table.html', 'w') as f:
-                        f.write(css_style)
-                        f.write(html_table)
-                    f.close
+                    ## HTMLをファイルに出力
+                    #with open('output_list/output_table.html', 'w') as f:
+                    #    f.write(css_style)
+                    #    f.write(html_table)
+                    #f.close
                     #doc = aw.Document("output_list/word_list.html")
                     #imageOptions = aw.saving.ImageSaveOptions(aw.SaveFormat.JPEG)
                     #imageOptions.jpeg_quality = 10
