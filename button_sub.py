@@ -15,6 +15,7 @@ import random
 
 #================テーブル形式で出力
 import pandas as pd
+#pip install pandas
 
 #pip install matplotlib
 #pip install japanize-matplotlib
@@ -46,9 +47,7 @@ class CreateButton(Button):
         guidId = f"{interaction.guild_id}"
         #チャンネルIDの取得
         channnelId = f"{interaction.channel_id}"
-        #メッセージID
-        message_id = interaction.message.id
-        target_message = await interaction.channel.fetch_message(message_id)
+
 
         try:
 
@@ -115,7 +114,9 @@ class CreateButton(Button):
                 if(len(resultData) == 0):
                     await interaction.response.edit_message(content="(人''▽｀)ありがとう☆！また遊んでね\nごめんね。確認する言葉がないよ！" ,view=None)
                 else:
-                    
+                    #メッセージID
+                    message_id = interaction.message.id
+                    target_message = await interaction.channel.fetch_message(message_id)
                     await interaction.response.defer(thinking=True)
 
                     #Noneを空白に変換
@@ -143,6 +144,7 @@ class CreateButton(Button):
                     logger.info("==終了画面生成終了==")
                     await target_message.delete()
                     await interaction.followup.send(content="今日のワード一覧だよ！",file=file)
+                    os.remove(img_output_path)
                     #await interaction.response.send_message(content=df)
 
                 update_query = ""
@@ -153,7 +155,7 @@ class CreateButton(Button):
                 update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
-                os.remove(img_output_path)
+                
 
             #やめるボタンが押された時の処理
             elif button_custom_id == 'cancel_button':
