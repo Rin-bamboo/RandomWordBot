@@ -1,3 +1,5 @@
+
+import os
 #===分割ファイルの読み込み
 from unittest import result
 from view_sub import CreateView #import CreateView
@@ -7,15 +9,23 @@ from discord import Button
 import discord
 
 from discord.ui import Button, View,TextInput,Modal,Select
+from discord import File
 
 import random
 
 #================テーブル形式で出力
 #pip install flask　→表をHTMｌにする
-#pip install aspose-words　→HTMLを画像変換
+#pip install imgkit　HTMLを画像に変換
 import aspose.words as aw
 
 import pandas as pd
+
+#DataFlameをimport matplotlib.pyplot as plt
+#pip install matplotlib
+#pip install japanize-matplotlib
+
+import japanize_matplotlib
+import matplotlib.pyplot as plt
 ##=====================MYSQL設定
 from db_setup import DbQuery
 
@@ -41,12 +51,16 @@ class CreateButton(Button):
         guidId = f"{interaction.guild_id}"
         #チャンネルIDの取得
         channnelId = f"{interaction.channel_id}"
-
-        select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
-        values = (guidId,channnelId)
-        resultData = queryDb.quryexcute(select_query,values)
+        #メッセージID
+        message_id = interaction.message.id
+        target_message = await interaction.channel.fetch_message(message_id)
 
         try:
+
+            select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
+            values = (guidId,channnelId)
+            resultData = queryDb.quryexcute(select_query,values)
+
             if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button":
                 logger.info("開始チェック")
                 await interaction.response.edit_message(content="終了しているみたい\nまた遊んでね！",view=None,delete_after=2)
@@ -91,80 +105,57 @@ class CreateButton(Button):
                 #await interaction.message.delete()    #やめるボタンが押されたらメッセージを削除し、メッセージ表示
                 logger.info("終了確認ボタン処理")
                 embed = discord.Embed(title="登録されているワード", description="(人''▽｀)ありがとう☆！また遊んでね！\n今日の一覧はこちら！", color=0x00ff7f)
-
-                select_query = ""
-                select_query = "SELECT word,create_user,use_user FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND delete_flg = False AND enable_flg = False"
+                
+                select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
                 values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)       
+                resultData = queryDb.quryexcute(select_query,values)   
+                seqbotid = int(resultData[0][0])
 
+                values = (seqbotid,)
+                select_query = ""
+                select_query = "SELECT word,create_user,use_user FROM WORDTABLE WHERE botseq_id = %s AND delete_flg = False AND enable_flg = False"
+                resultData = queryDb.quryexcute(select_query,values)
 
+                logger.info("==終了画面生成==")
                 if(len(resultData) == 0):
                     await interaction.response.edit_message(content="(人''▽｀)ありがとう☆！また遊んでね\nごめんね。確認する言葉がないよ！" ,view=None)
                 else:
+                    
+                    await interaction.response.defer(thinking=True)
+
                     #Noneを空白に変換
+                    img_output_path  = f"output_list\\output_table_{seqbotid}.png"   #画像ファイル出力先の指定
+
                     resultData = [(a, b, c if c is not None else '') for a, b, c in resultData]
                     df = pd.DataFrame(resultData, columns=["登録されたワード","作った人","使った人"])
-                    # DataFrameをHTML表に変換
-                    html_table = df.to_html(classes='styled-table', index=False)
-                    # CSSスタイルを定義
-                    css_style = """ 
-                    <style>
-                      .styled-table {
-                        border-collapse: collapse;
-                        width: auto;
-                        font-size: 14px;
-                        text-align: center;
-                      }
-                      .styled-table th,
-                      .styled-table td {
-                        border: 1px solid black;
-                        padding-left: 20px;
-                        padding-right: 20px;
-                        padding-bottom: 5px;
-                        padding-top: 5px;
-                      }
-                    .styled-table th {
-                        background-color: lightblue;
-                        text-align: center;
-                    }
-                    </style>
-                    """
 
-                    # HTMLをファイルに出力
-                    with open('output_list/output_table.html', 'w') as f:
-                        f.write(css_style)
-                        f.write(html_table)
-                    f.close
-                    #doc = aw.Document("output_list/word_list.html")
-                    #imageOptions = aw.saving.ImageSaveOptions(aw.SaveFormat.JPEG)
-                    #imageOptions.jpeg_quality = 10
-                    #imageOptions.horizontal_resolution = 72
+                    plt.figure(figsize=(8,6), dpi=1000)
+                    ax = plt.gca()
+                    ax.axis('off')
 
-                    #for page in range(0, doc.page_count):
-                    #    extractedPage = doc.extract_pages(page, 1)
-                    #    extractedPage.save(f"output_list/output_{page + 1}.jpg", imageOptions)
+                    ## DataFrameをテーブルとして描画
+                    table_data = []
+                    for row in df.itertuples(index=False):
+                        table_data.append(list(row))
+                    #表のフォントサイズを指定
+                    font_size = 16
+                    table = ax.table(cellText=table_data, colLabels=df.columns, cellLoc='center', loc='center', colColours=['lightgray'] * len(df.columns),fontsize=font_size)
 
-                        
-                    value = ["","",""]
-                    for data in resultData:
-                        value[0] = value[0] + data[0] +"\n"
-                        value[1] = value[1] + data[1] +"\n"
-                        if data[2] == None:
-                            value[2] = value[2] + "\n"
-                        else:
-                            value[2] = value[2] + data[2] +"\n"
+                    # 画像を保存
+                    plt.savefig(img_output_path, bbox_inches='tight', pad_inches=0.1, transparent=True)
 
-                    embed.add_field(name="登録されたワード", value=value[0],inline=True)
-                    embed.add_field(name="登録した人", value=value[1],inline=True)
-                    embed.add_field(name="ワードを使った人", value=value[2],inline=True)
-                    await interaction.response.edit_message(content="",embed=embed,view=None)
+                    file = File(img_output_path)
+                    logger.info("==終了画面生成終了==")
+                    await target_message.delete()
+                    await interaction.followup.send(content="今日のワード一覧だよ！",file=file)
+                    #await interaction.response.send_message(content=df)
 
                 update_query = ""
-                update_query = "UPDATE BOTSEQTABLE SET start_up_flg = False, start_up_time_stamp = null WHERE guild_id = %s AND channel_id = %s"
+                update_query = "UPDATE BOTSEQTABLE SET start_up_flg = False, start_up_time_stamp = null WHERE id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
                 update_query = ""
-                update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
+                update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
             #やめるボタンが押された時の処理
@@ -305,15 +296,18 @@ class CreateButton(Button):
             elif button_custom_id == "select_cancel_button":
                 logger.info("セレクト選択キャンセル処理")
                 await interaction.response.edit_message(content="キャンセルしました",embed = None,view = None,delete_after=2)
-
-            #except Exception as Err:
-            #    #print("Error, bot_id : " + bot_id + " channel_id : " + chat_id)
-            #    logging.error(Err)
             
+        except discord.DiscordException as ex:
+           logger.warning(f"DiscordException：{ex}",exc_info=True)
+        except discord.ClientException as ex:
+           logger.warning(f"ClientException：{ex}",exc_info=True)
+        except discord.HTTPException as ex:
+            logger.warning(f"HTTPException：{ex}",exc_info=True)
         except Exception as ex:
-           logger.warning(ex)
+           logger.warning(f"エラー情報：{ex}",exc_info=True)
            await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
-       
+
+
         finally:
             logger.info("=====================================ボタンコールバック処理終了======================================")
 

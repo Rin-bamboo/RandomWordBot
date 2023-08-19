@@ -13,7 +13,7 @@ def inptfile(name):
         logger.info("読み込みデータ：" + input_value)
         f.close()
     except Exception as ex:
-        logger.warning(f"エラー情報：{ex}")
+        logger.warning(f"エラー情報：{ex}",exc_info=True)
         input_value = "テキストが読み込めませんでした"
     finally:
         return input_value

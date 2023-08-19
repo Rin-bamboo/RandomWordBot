@@ -5,7 +5,7 @@
     <ProjectGuid>4323ac88-805b-4c9b-aac2-e02752a31d0a</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>RandomWordBot.py</StartupFile>
-    <SearchPath>..\..\..\..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages</SearchPath>
+    <SearchPath>..\..\..\..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages;..\..\..\..\..\..\..\..\Program Files\wkhtmltopdf</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>RandomWordBot</Name>
