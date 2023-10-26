@@ -9,7 +9,7 @@ image_size = (1024, 704) # これはピクセル単位です
 
 # フォントのパスとサイズを設定
 font_path = "C:\\Windows\\Fonts\\msgothic.ttc"  # 例として MS ゴシックを指定
-font_size = 215
+font_size = 18
 
 # 画像を作成
 image = Image.new("RGBA", image_size, (0, 0, 0, 255))

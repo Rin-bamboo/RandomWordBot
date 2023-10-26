@@ -13,6 +13,7 @@ from db_setup import DbQuery
 from log_setting import getLogger
 logger = getLogger(__name__)
 
+
 #モーダルクラスを継承したクラスの作成
 class CRUDModal(Modal, title='Questionnaire Response'):
     logger.info("=====================================モーダルクラス処理======================================")
