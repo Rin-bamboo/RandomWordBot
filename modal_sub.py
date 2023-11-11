@@ -55,7 +55,10 @@ class CRUDModal(Modal, title='Questionnaire Response'):
                 if modal_custom_id == "regist_input":
                     #登録モーダルで送信したら
                     #登録処理==
-                    
+                    select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
+                    values = (guidId,channnelId)
+                    resultData = queryDb.quryexcute(select_query,values)
+
                     insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
                     values = (botseq_id,input_value,userId,userName);
 

@@ -10,8 +10,12 @@ from bot_setting import BotSetting
 from discord.ui import Button, View,TextInput,Modal,Select
 import discord
 
+import Entity.RWBEntity
+import Model.RWBModel
+
+
 ##=====================MYSQL設定
-from db_setup import DbQuery
+# from db_setup import DbQuery
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
@@ -28,24 +32,26 @@ class SelectCustom(Select):
     async def callback(self, interaction: discord.Interaction):
         logger.info("=====================================Selectコールバッ処理開始======================================")
         try:
-            #DB接続のクラスをインスタンス化
-            queryDb = DbQuery()
-
+            # #DB接続のクラスをインスタンス化
+            # queryDb = DbQuery()
+            
+            data = Entity.RWBEntity.RWBEntity
+            rwbModel = Model.RWBModel.RWBModel
+            
             select_custom_id = interaction.data["custom_id"]
             #コマンド送信ユーザーの取得
-            userId = f"{interaction.user}"
+            data.get_userId = f"{interaction.user}"
             #サーバーIDの取得
-            guidId = f"{interaction.guild_id}"
+            data.get_guildId = f"{interaction.guild_id}"
             #チャンネルIDの取得
-            channnelId = f"{interaction.channel_id}"
+            data.get_channelId = f"{interaction.channel_id}"
+            
+            data.set_wordSeq = interaction.data["values"][0]
+            
+            chengeid = data.get_wordsq
 
-            selected_value = interaction.data["values"][0]
-            
-            bot_setting = BotSetting()
-            botseq_id = bot_setting.GetBotSeq(guidId,channnelId)
-            
             if select_custom_id == "update_select":
-            
+                #更新処理
                 update_modal = CRUDModal(title="言葉を更新してね")
                 update_input = TextInput(label = "好きな言葉を入力してね",style = discord.TextStyle.short ,custom_id = "update_input@" + str(selected_value) ,placeholder = "言葉を入力",max_length=25,required  = True)
                 update_modal.add_item(update_input)
@@ -53,10 +59,11 @@ class SelectCustom(Select):
                 await interaction.response.send_modal(update_modal)
 
             elif select_custom_id == "delete_select":
-                update_query = "UPDATE WORDTABLE SET delete_flg = True WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
-
-                values = (botseq_id,userId,selected_value)
-                resultData = queryDb.quryexcute(update_query,values)
+                #削除処理
+                # update_query = "UPDATE WORDTABLE SET delete_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
+                # values = (guidId,channnelId,userId,chengeid)
+                # resultData = queryDb.quryexcute(update_query,values)
+                rwbModel.WordDelete(data)
 
                 await interaction.response.edit_message(content="データを削除したよ！",view=None,delete_after=2)
                 

@@ -275,6 +275,8 @@ class CreateButton(Button):
                 select_query = "SELECT id,word FROM WORDTABLE WHERE botseq_id = %s AND create_user_id = %s AND select_flg = False AND delete_flg = False AND enable_flg = False"
                 values = (botseq_id,userId)
                 resultData = queryDb.quryexcute(select_query,values)
+                
+
                 if(len(resultData) == 0):
                     await interaction.response.send_message("更新する言葉がないよ！",ephemeral=True,delete_after=2)
                 else:
@@ -311,7 +313,6 @@ class CreateButton(Button):
 
                     await interaction.response.send_message("削除する言葉を選んでね！", view=message_view,ephemeral  = True)
 
-
             #確認ボタンが押されたら
             elif button_custom_id == "check_button":
                 logger.info("確認ボタン処理")
@@ -332,7 +333,8 @@ class CreateButton(Button):
                         output_message = output_message + "\n"
 
                     embed.add_field(name="登録したワード", value=output_message)
-                
+                    
+                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="閉じる", custom_id="select_cancel_button")
                     message_view.add_item(cancel_button)
                     await interaction.response.send_message(embed=embed,view=message_view,ephemeral  = True)
 
