@@ -24,4 +24,4 @@ jobs:
           chmod 600 private_key
 
           # デプロイ先ディレクトリに移動してからgit pullを実行する
-          ssh -oStrictHostKeyChecking=yes -i private_key $USER_NAME@$HOST_NAME "cd /home/ec2-user/discordbot/RandomWordBot && git pull origin main"
+          ssh -oStrictHostKeyChecking=no -i private_key $USER_NAME@$HOST_NAME "cd /home/ec2-user/discordbot/RandomWordBot && git pull origin main"
