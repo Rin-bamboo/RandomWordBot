@@ -1,6 +1,7 @@
 #===分割ファイルの読み込み
 from ast import Constant
 from email import header
+import os
 from unittest import result
 from view_sub import CreateView #import CreateView
 from select_sub import SelectCustom #import SelectCustom
@@ -120,7 +121,8 @@ class CreateButton(Button):
 
                     await interaction.response.defer(thinking=True)
 
-                    img_output_path  = f"output_list\\output_table_{seqbotid}.png"   #画像ファイル出力先の指定 Linuxの指定じゃないため、変な場所に画像が生成されます。
+                    img_output_path  = "\output_list\output_table_" + str(seqbotid) + ".png"    #画像ファイル出力先の指定 Linuxの指定じゃないため、変な場所に画像が生成されます。
+                    logger.info(f"出力先ファイル：{img_output_path}")
                     # TODO：画像の出力が完了したら削除する処理を追加します。
                     resultData = [(a, b, c if c is not None else '') for a, b, c in resultData]
                     df = pd.DataFrame(resultData, columns=["登録されたワード","作った人","使った人"])
@@ -156,6 +158,8 @@ class CreateButton(Button):
                 update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
                 resultData = queryDb.quryexcute(update_query,values)
                 
+                #画像ファイルを削除
+                os.remove(img_output_path)
 
 
             #やめるボタンが押された時の処理
