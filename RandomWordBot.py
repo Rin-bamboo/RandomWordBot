@@ -106,7 +106,7 @@ async def start(interaction: discord.Interaction):
         else:
             join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
             end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
-            all_check_button = CreateButton(style=discord.ButtonStyle.gray, label="今日のワード一覧", custom_id="all_check_button")
+            all_check_button = CreateButton(style=discord.ButtonStyle.gray, label="今日のフレーズ一覧", custom_id="all_check_button")
             label = "すでに開始されているよ！\n参加するを押すと、言葉の「登録」「変更」「削除」ができるよ \n 終わるときは「終わる？」ボタンを押してね！！"
             #viewにボタンを追加
             view.add_item(join_button)
