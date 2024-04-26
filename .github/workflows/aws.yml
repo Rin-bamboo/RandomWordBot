@@ -1,0 +1,24 @@
+# Workflowの名前。任意に設定可能
+name: EC2 auto deploy
+
+# アクションが実行されるタイミングを設定。今回はmainブランチにpushされた時。
+on:
+ push:
+   branches:
+     - main
+ 
+#実行される処理
+jobs:
+ build:
+   # 実行環境の指定
+   runs-on: ubuntu-latest
+   steps:
+
+     # デプロイする
+     - name: Deploy
+       run: |
+         # SSH接続して、git pullする
+         echo "${{ secrets.PRIVATE_KEY }}" > private_key
+         chmod 600 private_key
+         ssh -oStrictHostKeyChecking=no ${{ secrets.USER_NAME }}@${{ secrets.HOST_NAME }} -i private_key "cd /home/ec2-user/discordbot && git fetch git@github.com:Rin-bamboo/RandomWordBot.git && git pull git@github.com:Rin-bamboo/RandomWordBot.git"
+         
