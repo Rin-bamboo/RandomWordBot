@@ -95,10 +95,12 @@ async def start(interaction: discord.Interaction):
         if len(resultData) == 0:
             #ボタンの作成 style:ボタンの種類 label:ボタンの名前 custom_id：ボタンのID
             okbutton = CreateButton(style=discord.ButtonStyle.primary, label="始める！", custom_id="start_button")
+            setting_button = CreateButton(style=discord.ButtonStyle.green, label="設定",custom_id="setting_button")
             cancelbutton = CreateButton(style=discord.ButtonStyle.danger, label="やっぱりやめる！", custom_id="cancel_button")
             #viewにボタンを追加
             view.add_item(okbutton)
             view.add_item(cancelbutton)
+            #view.add_item(setting_button)
             
             label = "楽しい遊びを始めますか？"
             #view.start_message()
@@ -106,11 +108,14 @@ async def start(interaction: discord.Interaction):
         else:
             join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
             end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
+            setting_confirm_button = CreateButton(style=discord.ButtonStyle.green, label="設定確認",custom_id="setting_confirm_button")
+
             all_check_button = CreateButton(style=discord.ButtonStyle.gray, label="今日のフレーズ一覧", custom_id="all_check_button")
             label = "すでに開始されているよ！\n参加するを押すと、言葉の「登録」「変更」「削除」ができるよ \n 終わるときは「終わる？」ボタンを押してね！！"
             #viewにボタンを追加
             view.add_item(join_button)
             view.add_item(end_button)
+            #view.add_item(setting_confirm_button)
 
         client.add_view(view = view)
         # メッセージにボタンを表示します
