@@ -57,6 +57,14 @@ class CreateButton(Button):
         #メッセージID
         message_id = interaction.message.id
         # target_message = await interaction.channel.fetch_message(message_id)
+        #ボタンインスタンス作成
+        regist_button = CreateButton(style=discord.ButtonStyle.success, label="登録", custom_id="regist_button")
+        update_button = CreateButton(style=discord.ButtonStyle.primary, label="更新", custom_id="update_button")
+        delete_button = CreateButton(style=discord.ButtonStyle.danger, label="削除", custom_id="delete_button")
+        check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
+        get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
+        commit_button = CreateButton(style=discord.ButtonStyle.gray, label="登録完了", custom_id="commit_button")  
+        re_regist_button = CreateButton(style=discord.ButtonStyle.success, label="再登録", custom_id="re_regist_button")
         
         try:
             if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button":
@@ -81,9 +89,11 @@ class CreateButton(Button):
     
                 join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
                 end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
+                setting_confirm_button = CreateButton(style=discord.ButtonStyle.green, label="設定確認",custom_id="setting_confirm_button")
 
                 message_view.add_item(join_button)
                 message_view.add_item(end_button)
+                #message_view.add_item(setting_confirm_button)
                 await interaction.response.edit_message(content="参加するを押すと、言葉の「登録」「変更」「削除」ができるよ \n 終わるときは「終わる？」ボタンを押してね！！",view=message_view)
                 #await message.edit("参加するを押すと、言葉の「登録」「変更」「削除」ができるよ",view=start_view)
 
@@ -113,8 +123,8 @@ class CreateButton(Button):
                 select_query = ""
                 select_query = "SELECT word,create_user,use_user FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND delete_flg = False AND enable_flg = False"
                 values = (guidId,channnelId)
-                resultData = queryDb.quryexcute(select_query,values)       
-                
+                resultData = queryDb.quryexcute(select_query,values) 
+
                 if(len(resultData) == 0):
                     await interaction.response.edit_message(content="(人''▽｀)ありがとう☆！また遊んでね\nごめんね。確認する言葉がないよ！" ,view=None)
                 else:
@@ -157,10 +167,14 @@ class CreateButton(Button):
                 update_query = ""
                 update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
                 resultData = queryDb.quryexcute(update_query,values)
+
+                delete_query = ""
+                delete_query = "DELETE FROM join_members WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
+                values = (guidId,channnelId)
+                resultData = queryDb.quryexcute(delete_query,values)
                 
                 #画像ファイルを削除
                 os.remove(img_output_path)
-
 
             #やめるボタンが押された時の処理
             elif button_custom_id == 'cancel_button':
@@ -171,20 +185,50 @@ class CreateButton(Button):
             #参加ボタンが押された時の処理
             elif button_custom_id == "join_button":
                 logger.info("参加ボタン処理")
-                regist_button = CreateButton(style=discord.ButtonStyle.success, label="登録", custom_id="regist_button")
-                update_button = CreateButton(style=discord.ButtonStyle.primary, label="更新", custom_id="update_button")
-                delete_button = CreateButton(style=discord.ButtonStyle.danger, label="削除", custom_id="delete_button")
-                check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
-                get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
-                exit_button = CreateButton(style=discord.ButtonStyle.gray, label="登録を終わる", custom_id="exit_button")
-            
-                message_view.add_item(regist_button)
-                message_view.add_item(update_button)
-                message_view.add_item(delete_button)
-                message_view.add_item(check_button)
-                message_view.add_item(get_button)
+                
+                #参加管理DBにデータ登録
+                #参加フレーズブレンダーIDの取得
+                select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
+                values = (guidId,channnelId)
+                resultData = queryDb.quryexcute(select_query,values)
+                bot_id = resultData[0][0];
 
-                await interaction.response.send_message("好きな言葉の「登録」「更新」「削除」ができるよ！",view=message_view,ephemeral=True)
+                #参加済みかどうか確認
+                select_query = "SELECT id,is_completion FROM join_members WHERE botseq_id = %s AND user_id = %s"
+                values = (bot_id,userId)
+                resultData = queryDb.quryexcute(select_query,values)
+                
+                #ボタン表示制御
+                output_message = "好きな言葉の「登録」「更新」「削除」ができるよ！"
+                if len(resultData) == 0:
+                    insert_query = "INSERT INTO join_members(botseq_id,user_id) VALUES(%s,%s); "
+                    values = (bot_id,userId)
+                    queryDb.quryexcute(insert_query,values)
+                    
+                    message_view.add_item(regist_button)
+                    message_view.add_item(update_button)
+                    message_view.add_item(delete_button)
+                    message_view.add_item(check_button)
+                    #message_view.add_item(get_button)
+                    message_view.add_item(commit_button)
+
+                else:
+                    if resultData[0][1] == False:
+                        message_view.add_item(regist_button)
+                        message_view.add_item(update_button)
+                        message_view.add_item(delete_button)
+                        message_view.add_item(check_button)
+                        #message_view.add_item(get_button)
+                        message_view.add_item(commit_button)
+                        
+                    else:
+                        output_message = "すでに登録を完了しているよ"
+
+                        message_view.add_item(check_button)
+                        message_view.add_item(get_button)
+                        message_view.add_item(re_regist_button)
+
+                await interaction.response.send_message(output_message,view=message_view,ephemeral=True)
         
             #登録ボタン
             elif button_custom_id == "regist_button":
@@ -269,6 +313,17 @@ class CreateButton(Button):
             #言葉ゲット！！
             elif button_custom_id == "get_button":
                 logger.info("ワードゲットボタン処理")
+                
+                #ワード登録チェック（参加者全員が登録完了してからワードゲット可能）
+                select_query = "SELECT MIN(is_completion) FROM join_members WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) GROUP BY botseq_id"
+                values = (guidId,channnelId)
+                resultData = queryDb.quryexcute(select_query,values)
+                
+                if (resultData[0][0] == 0):
+                    await interaction.response.send_message("まだ登録が終わっていないよ",ephemeral=True,delete_after=2)
+                    return
+                
+                #ワードゲット処理
                 embed = discord.Embed(title="あなたのワードは・・・", description="あなたのワードはこれだよ！\n面白い言葉が来たかな？", color=0x00bfff)
 
                 select_query = "SELECT id,word FROM WORDTABLE WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND select_flg = False AND delete_flg = False AND enable_flg = False"
@@ -280,6 +335,7 @@ class CreateButton(Button):
 
                 if(len(resultData) == 0):
                     await interaction.response.send_message("取得する言葉がないよ！",ephemeral=True,delete_after=2)
+                    
                 else:
 
                     get_choice = random.choice(resultData)
@@ -296,11 +352,49 @@ class CreateButton(Button):
                     message_view.add_item(cancel_button)
 
                     await interaction.response.send_message(embed = embed,view=message_view ,ephemeral=True)
+                    
+            elif button_custom_id == "re_regist_button":
+                logger.info("再登録ボタン処理")
+                
+                update_query = "UPDATE join_members SET is_completion = False WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s)"
+                values = (guidId,channnelId)
+                resultData = queryDb.quryexcute(update_query,values)
+
+                
+                message_view.add_item(regist_button)
+                message_view.add_item(update_button)
+                message_view.add_item(delete_button)
+                message_view.add_item(check_button)
+                #message_view.add_item(get_button)
+                message_view.add_item(commit_button)
+                output_message = "好きな言葉の「登録」「更新」「削除」ができるよ！"
+                
+                await interaction.response.edit_message(content=output_message,embed = None,view = message_view)
 
             elif button_custom_id == "select_cancel_button":
                 logger.info("セレクト選択キャンセル処理")
                 await interaction.response.edit_message(content="キャンセルしました",embed = None,view = None,delete_after=2)
+                
+            elif button_custom_id == "commit_button":
+                logger.info("登録完了ボタンの押下")
+                
+                #登録完了アップデート
+                update_query = "UPDATE join_members SET is_completion = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND user_id = %s"
+                values = (guidId,channnelId,userId)
+                resultData = queryDb.quryexcute(update_query,values)
 
+
+
+                #ボタンインスタンス作成
+                check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
+                get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
+                re_regist_button = CreateButton(style=discord.ButtonStyle.success, label="再登録", custom_id="re_regist_button")
+                message_view.add_item(check_button)
+                message_view.add_item(get_button)
+                message_view.add_item(re_regist_button)
+                
+                await interaction.response.edit_message(content="登録の完了",view = message_view)
+                
             #except Exception as Err:
             #    #print("Error, bot_id : " + bot_id + " channel_id : " + chat_id)
             #    logging.error(Err)
