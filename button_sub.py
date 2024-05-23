@@ -1,6 +1,7 @@
 #===分割ファイルの読み込み
 from ast import Constant
 from email import header
+from multiprocessing import Value
 import os
 from unittest import result
 from xmlrpc.client import boolean
@@ -170,18 +171,18 @@ class CreateButton(Button):
                     #画像ファイルを削除
                     os.remove(img_output_path)
                     
-
+                values = (guidId,channnelId)
                 update_query = ""
                 update_query = "UPDATE BOTSEQTABLE SET start_up_flg = False, start_up_time_stamp = null WHERE guild_id = %s AND channel_id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
+                values = (botseq_id,)
                 update_query = ""
                 update_query = "UPDATE WORDTABLE SET enable_flg = True WHERE botseq_id = %s"
                 resultData = queryDb.quryexcute(update_query,values)
 
                 delete_query = ""
                 delete_query = "DELETE FROM join_members WHERE botseq_id = %s"
-                values = (botseq_id,)
                 resultData = queryDb.quryexcute(delete_query,values)
                 
 
