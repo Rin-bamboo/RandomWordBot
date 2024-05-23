@@ -97,12 +97,20 @@ async def start(interaction: discord.Interaction):
             #設定をデフォルト値で作成
             seqbotid = bot_setting.GetBotSeq(guidId,channnelId)
             
-            insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
-            values = (4,seqbotid,"True")
-            queryDb.quryexcute(insert_query,values)
+            select_query = "SELECT setting_id FROM settings WHERE setting_name = %s"
+            values = ('Anonymous Setting',)
+            setting_id = queryDb.quryexcute(select_query,values)
             
             insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
-            values = (5,seqbotid,10)
+            values = (setting_id[0][0],seqbotid,"True")
+            queryDb.quryexcute(insert_query,values)
+
+            select_query = "SELECT setting_id FROM settings WHERE setting_name = %s"
+            values = ('Registration Limit',)
+            setting_id = queryDb.quryexcute(select_query,values)
+            
+            insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
+            values = (setting_id[0][0],seqbotid,10)
             queryDb.quryexcute(insert_query,values)
             
 
@@ -118,12 +126,20 @@ async def start(interaction: discord.Interaction):
             if (len(settingResultData) == 0):
                 #設定をデフォルト値で作成
             
-                insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
-                values = (4,seqbotid,"True")
-                queryDb.quryexcute(insert_query,values)
+                select_query = "SELECT setting_id FROM settings WHERE setting_name = %s"
+                values = ('Anonymous Setting',)
+                setting_id = queryDb.quryexcute(select_query,values)
             
                 insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
-                values = (5,seqbotid,10)
+                values = (setting_id[0][0],seqbotid,"True")
+                queryDb.quryexcute(insert_query,values)
+
+                select_query = "SELECT setting_id FROM settings WHERE setting_name = %s"
+                values = ('Registration Limit',)
+                setting_id = queryDb.quryexcute(select_query,values)
+            
+                insert_query="INSERT INTO settings_value(setting_id,botseq_id,setting_value) VALUES(%s,%s,%s)"
+                values = (setting_id[0][0],seqbotid,10)
                 queryDb.quryexcute(insert_query,values)
         
         # ボタンを含むView（ビュー）を作成します
