@@ -33,10 +33,10 @@ class DbQuery():
                 # バージョン情報を取得
                 cursor = connection.cursor()
                 logger.info("Connected to MySQL Server")
-
-                cmpleate_query = cursor.execute(query,values)
                 logger.info(f"クエリ情報：{query}")
                 logger.info(f"データ情報：{values}")
+                
+                cmpleate_query = cursor.execute(query,values)
 
                 query_value = cursor.fetchall()
                 connection.commit();
