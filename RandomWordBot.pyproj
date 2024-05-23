@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="bot_setting.py" />
     <Compile Include="button_sub.py" />
     <Compile Include="count_characters.py" />
     <Compile Include="db_setup.py" />
@@ -40,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="img\" />
+    <Folder Include="rockpaperscissors\" />
     <Folder Include="output_list\" />
     <Folder Include="text\" />
   </ItemGroup>
