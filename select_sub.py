@@ -90,7 +90,7 @@ class SelectCustom(Select):
                 elif setting_data[0][2] == "Registration Limit":
                     #登録上限設定
                     setting_modal = CRUDModal(title="フレーズブレンダーの設定をするよ！")
-                    setting_input = TextInput(label = setting_data[0][0] + "の設定(1～50)",style = discord.TextStyle.short ,custom_id = "regist_limit@" + str(selected_value) ,placeholder = "設定値",required  = True)
+                    setting_input = TextInput(label = setting_data[0][0] + "の設定(1～25)",style = discord.TextStyle.short ,custom_id = "regist_limit@" + str(selected_value) ,placeholder = "設定値",required  = True)
                     setting_modal.add_item(setting_input)
 
                     await interaction.response.send_modal(setting_modal)
