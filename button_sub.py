@@ -73,7 +73,11 @@ class CreateButton(Button):
         get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
         commit_button = CreateButton(style=discord.ButtonStyle.gray, label="登録完了", custom_id="commit_button")  
         re_regist_button = CreateButton(style=discord.ButtonStyle.success, label="再登録", custom_id="re_regist_button")
-        
+        join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
+        end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
+        setting_button = CreateButton(style=discord.ButtonStyle.green, label="設定",custom_id="setting_button")
+        setting_confirm_button = CreateButton(style=discord.ButtonStyle.gray, label="設定確認",custom_id="setting_confirm_button")
+
         try:
             if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button" and button_custom_id != "setting_button":
                 logger.info("開始チェック")
@@ -87,14 +91,11 @@ class CreateButton(Button):
                 update_query="UPDATE BOTSEQTABLE SET start_up_flg = True,start_up_flg = True,start_up_time_stamp = cast(now() as datetime) WHERE guild_id = %s AND channel_id = %s"
                 queryDb.quryexcute(update_query,values) 
                     
-
-                join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
-                end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
-                setting_confirm_button = CreateButton(style=discord.ButtonStyle.green, label="設定確認",custom_id="setting_confirm_button")
-
                 message_view.add_item(join_button)
                 message_view.add_item(end_button)
-                #message_view.add_item(setting_confirm_button)
+                message_view.add_item(setting_button)
+                message_view.add_item(setting_confirm_button)
+                
                 await interaction.response.edit_message(content="参加するを押すと、言葉の「登録」「変更」「削除」ができるよ \n 終わるときは「終わる？」ボタンを押してね！！",view=message_view)
                 #await message.edit("参加するを押すと、言葉の「登録」「変更」「削除」ができるよ",view=start_view)
 
