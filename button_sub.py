@@ -77,6 +77,9 @@ class CreateButton(Button):
         end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
         setting_button = CreateButton(style=discord.ButtonStyle.green, label="設定",custom_id="setting_button")
         setting_confirm_button = CreateButton(style=discord.ButtonStyle.gray, label="設定確認",custom_id="setting_confirm_button")
+        cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="キャンセル", custom_id="select_cancel_button")
+        
+        close_button = CreateButton(style=discord.ButtonStyle.danger, label="閉じる",custom_id = "close_button")
 
         try:
             if len(resultData) == 0 and button_custom_id != "start_button" and button_custom_id != "end_button" and button_custom_id != "setting_button":
@@ -280,7 +283,7 @@ class CreateButton(Button):
 
                         updata_select.add_option(value=resultData[i][0],label=resultData[i][1],description="",)
 
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="キャンセル", custom_id="select_cancel_button")
+                    
                     message_view.add_item(updata_select)
                     message_view.add_item(cancel_button)
 
@@ -303,7 +306,6 @@ class CreateButton(Button):
 
                         delete_select.add_option(value=resultData[i][0],label=resultData[i][1],description="",)
                 #================================================
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="キャンセル", custom_id="select_cancel_button")
                     message_view.add_item(delete_select)
                     message_view.add_item(cancel_button)
 
@@ -331,7 +333,6 @@ class CreateButton(Button):
 
                     embed.add_field(name="登録したワード", value=output_message)
                 
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="閉じる", custom_id="select_cancel_button")
                     message_view.add_item(cancel_button)
                     await interaction.response.send_message(embed=embed,view=message_view,ephemeral  = True)
 
@@ -373,7 +374,6 @@ class CreateButton(Button):
 
                     embed.add_field(name="あなたのワード", value=get_word,inline=False)
 
-                    cancel_button = CreateButton(style=discord.ButtonStyle.danger, label="閉じる", custom_id="select_cancel_button")
                     message_view.add_item(cancel_button)
 
                     await interaction.response.send_message(embed = embed,view=message_view ,ephemeral=True)
@@ -399,6 +399,9 @@ class CreateButton(Button):
             elif button_custom_id == "select_cancel_button":
                 logger.info("セレクト選択キャンセル処理")
                 await interaction.response.edit_message(content="キャンセルしました",embed = None,view = None,delete_after=2)
+                
+            elif button_custom_id == "close_button":
+                await interaction.response.edit_message(content="閉じるよ",embed = None,view = None,delete_after=2)
                 
             elif button_custom_id == "commit_button":
                 logger.info("登録完了ボタンの押下")
@@ -438,7 +441,8 @@ class CreateButton(Button):
                     setting_select.add_option(value=setting_info[i][2],label=setting_info[i][1],description="",)                
 
                 message_view.add_item(setting_select)
-
+                message_view.add_item(close_button)
+                
                 await interaction.response.send_message(embed=embed,view=message_view,content="設定する項目を選択してね！")
                     
                     
@@ -456,7 +460,10 @@ class CreateButton(Button):
                 embed = discord.Embed(title="フレーズブレンダー設定", description="設定詳細", color=0x00ff7f)
 
                 embed.add_field(name="設定名称：設定値", value=setting_info_message)
-                await interaction.response.send_message(embed=embed)
+                
+                message_view.add_item(close_button)
+
+                await interaction.response.send_message(embed=embed,view=message_view)
                 
 
                 
