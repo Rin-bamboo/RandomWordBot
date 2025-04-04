@@ -1,4 +1,4 @@
-
+﻿
 
 #BOTURL
 #https://discord.com/api/oauth2/authorize?client_id=1132298647288168519&permissions=8&scope=bot%20applications.commands
