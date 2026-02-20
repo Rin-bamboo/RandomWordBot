@@ -8,7 +8,6 @@
 
 #設定ファイルの読み込み import
 import os
-from pickle import NONE
 from dotenv import load_dotenv
 from bot_setting import BotSetting
 load_dotenv()
