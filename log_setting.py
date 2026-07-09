@@ -2,7 +2,10 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-LOGFILE = os.getenv('LOGFILE')
+LOGFILE = os.getenv('LOGFILE', 'logs/randombotapp.log').replace('\\', os.sep)
+log_directory = os.path.dirname(LOGFILE)
+if log_directory:
+    os.makedirs(log_directory, exist_ok=True)
 
 
 import logging
@@ -10,11 +13,11 @@ import logging.handlers
 
 def getLogger(name):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logging.getLogger('discord.http').setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    logging.getLogger('discord').setLevel(logging.INFO)
 
     FORMAT = '%(levelname)s %(asctime)s %(name)s： %(message)s'
-    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
 
     handler = logging.handlers.RotatingFileHandler(
         filename=LOGFILE,

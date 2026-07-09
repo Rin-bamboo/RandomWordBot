@@ -5,7 +5,7 @@ def count_characters(text):
     for char in text:
         char_width = unicodedata.east_asian_width(char)
         if char_width in ('W', 'F'):
-            count += 2  # ‘SŠp•¶š
+            count += 2  # å…¨è§’æ–‡å­—
         else:
-            count += 1  # ”¼Šp•¶š
+            count += 1  # åŠè§’æ–‡å­—
     return count
