@@ -141,6 +141,7 @@ class CreateButton(Button):
                     await interaction.response.defer(thinking=True)
 
                     img_output_path = os.path.join("output_list", f"output_table_{seqbotid}.png")
+                    os.makedirs(os.path.dirname(img_output_path), exist_ok=True)
                     
                     logger.info(f"出力先ファイル：{img_output_path}")
                     
@@ -499,8 +500,22 @@ class CreateButton(Button):
             #    logging.error(Err)
             
         except Exception as ex:
-           logger.warning(ex)
-           await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
+            logger.exception("ボタンコールバック処理でエラーが発生しました")
+            if interaction.response.is_done():
+                await interaction.edit_original_response(
+                    content="ごめんね処理に失敗したよ",
+                    embed=None,
+                    view=None,
+                    attachments=[],
+                )
+            else:
+                await interaction.response.send_message(
+                    content="ごめんね処理に失敗したよ",
+                    embed=None,
+                    view=None,
+                    ephemeral=True,
+                    delete_after=5,
+                )
        
         finally:
             logger.info("=====================================ボタンコールバック処理終了======================================")

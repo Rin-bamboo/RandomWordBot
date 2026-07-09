@@ -18,8 +18,8 @@ RUN python -m pip install --upgrade pip \
 
 COPY --chown=bot:bot . .
 
-RUN mkdir -p /app/logs \
-    && chown -R bot:bot /app/logs
+RUN mkdir -p /app/logs /app/output_list \
+    && chown -R bot:bot /app/logs /app/output_list
 
 USER bot
 
