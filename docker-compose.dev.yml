@@ -1,0 +1,42 @@
+name: randomwordbot-dev
+
+services:
+  discord-bot-dev:
+    build: .
+    container_name: phraseblender-bot-dev
+    env_file:
+      - .env
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN_DEV:?BOT_TOKEN_DEV must be set in .env}
+      HOST: db-dev
+      TZ: Asia/Tokyo
+    depends_on:
+      db-dev:
+        condition: service_healthy
+    restart: "no"
+
+  db-dev:
+    image: mysql:8.4
+    container_name: phraseblender-db-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PASS:?PASS must be set in .env}
+      MYSQL_DATABASE: ${DB:-botapp}
+      TZ: Asia/Tokyo
+    ports:
+      - "3308:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+09:00
+    volumes:
+      - phraseblender-db-dev-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  phraseblender-db-dev-data:
