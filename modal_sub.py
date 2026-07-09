@@ -4,11 +4,10 @@ import view_sub #import CreateView
 import select_sub #import SelectCustom
 import modal_sub #import CRUDModal
 from bot_setting import BotSetting
+from Model.DiscordInfo import interaction_context
+from Model.RWBModel import RWBModel
 from discord.ui import Button, View,TextInput,Modal,Select
 import discord
-
-##=====================MYSQL設定
-from db_setup import DbQuery
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
@@ -23,15 +22,12 @@ class CRUDModal(Modal, title='Questionnaire Response'):
         #await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
     #コマンド送信ユーザーの取得
         try:
-            userId = f"{interaction.user}"
-            userName = f"{interaction.user.display_name}"
-            #サーバーIDの取得
-            guidId = f"{interaction.guild_id}"
-            #チャンネルIDの取得
-            channnelId = f"{interaction.channel_id}"
-            
+            context = interaction_context(interaction)
             bot_setting = BotSetting()
-            botseq_id = bot_setting.GetBotSeq(guidId,channnelId)
+            botseq_id = bot_setting.GetBotSeq(
+                context.guild_id, context.channel_id
+            )
+            model = RWBModel()
 
             intaraction_data = interaction.data["components"][0]["components"][0]
             input_value = intaraction_data["value"]
@@ -44,36 +40,28 @@ class CRUDModal(Modal, title='Questionnaire Response'):
                 get_data_id = split_id[1]
 
 
-            #DB接続のクラスをインスタンス化
-            queryDb = DbQuery()
-
             if len(input_value) > 100:
                 await interaction.response.send_message(f'{input_value} \nは100文字を超えてるよ！！\n100文字以内で登録してね！', ephemeral=True,delete_after=2)
 
             else:
 
                 if modal_custom_id == "regist_input":
-                    #登録モーダルで送信したら
-                    #登録処理==
-                    select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
-                    values = (guidId,channnelId)
-                    resultData = queryDb.quryexcute(select_query,values)
-
-                    insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
-                    values = (botseq_id,input_value,userId,userName);
-
-                    queryDb.quryexcute(insert_query,values);
-
-                    #==========↑↑====================
+                    model.insert_word(
+                        botseq_id,
+                        input_value,
+                        context.user_id,
+                        context.user_name,
+                    )
 
                     await interaction.response.send_message(f'{input_value} 登録できたよ！', ephemeral=True,delete_after=2)
 
                 elif modal_custom_id == "update_input":
-                    #更新が選択されたら
-                    update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
-
-                    values = (input_value,botseq_id,userId,get_data_id)
-                    resultData = queryDb.quryexcute(update_query,values)
+                    model.update_word(
+                        botseq_id,
+                        input_value,
+                        context.user_id,
+                        get_data_id,
+                    )
 
                     await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
                     
@@ -86,10 +74,7 @@ class CRUDModal(Modal, title='Questionnaire Response'):
                     else:
                         if 0 < intcheck & intcheck <= 25:
                             
-                            update_query = "UPDATE settings_value JOIN settings ON  settings_value.setting_id = settings.setting_id SET settings_value.setting_value = %s WHERE settings.setting_name = 'Registration Limit' AND  botseq_id = %s ;"
-                
-                            values = (intcheck,botseq_id)
-                            queryDb.quryexcute(update_query,values)
+                            model.update_registration_limit(botseq_id, intcheck)
                         
                             await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
                         else:

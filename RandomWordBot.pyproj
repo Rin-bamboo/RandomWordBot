@@ -23,7 +23,6 @@
   <ItemGroup>
     <Compile Include="bot_setting.py" />
     <Compile Include="button_sub.py" />
-    <Compile Include="Control\RWBControl.py" />
     <Compile Include="count_characters.py" />
     <Compile Include="db_setup.py" />
     <Compile Include="end_list_output.py" />
@@ -35,7 +34,6 @@
     <Compile Include="RandomWordBot.py" />
     <Compile Include="select_sub.py" />
     <Compile Include="text_input.py" />
-    <Compile Include="View\RWB.py" />
     <Compile Include="view_sub.py" />
   </ItemGroup>
   <ItemGroup>
@@ -43,15 +41,12 @@
     <Content Include="img\start.png" />
     <Content Include="README.md" />
     <Content Include="text\help.txt" />
-    <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="img\" />
     <Folder Include="rockpaperscissors\" />
     <Folder Include="Entity\" />
-    <Folder Include="Control\" />
     <Folder Include="Model\" />
-    <Folder Include="View\" />
     <Folder Include="output_list\" />
     <Folder Include="text\" />
   </ItemGroup>

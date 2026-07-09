@@ -80,7 +80,6 @@ async def start(interaction: discord.Interaction):
         guidId = f"{interaction.guild_id}"
         #チャンネルIDの取得
         channnelId = f"{interaction.channel_id}"
-        
         #=====DBの準備
         queryDb = DbQuery()
         
@@ -159,7 +158,6 @@ async def start(interaction: discord.Interaction):
             #view.start_message()
 
         else:
-            
             join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
             end_button = CreateButton(style=discord.ButtonStyle.danger, label="終わる？", custom_id="end_button")
 

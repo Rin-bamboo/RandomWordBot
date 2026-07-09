@@ -47,8 +47,6 @@ class DbQuery():
             print("Error:", e)
             logger.error(e)
             connection.rollback();
-            
-            return False
             # エラーが発生した場合の処理をここに追加
             # 例: エラーログの出力、エラーメッセージの通知、別のアクションの実行など
 

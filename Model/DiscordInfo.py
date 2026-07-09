@@ -1,20 +1,13 @@
-from gc import callbacks
-import Entity.RWBEntity
+from Entity.RWBEntity import InteractionContext
 
-from discord.ui import Button, View,TextInput,Modal,Select
-import discord
 
-class deiscordInfo:
-    async def callback(self, interaction: discord.Interaction):
-        data = Entity.RWBEntity.RWBEntity
+def interaction_context(interaction, selected_value=None):
+    """Discord固有のオブジェクトから処理に必要な値だけを取り出す。"""
 
-        select_custom_id = interaction.data["custom_id"]
-        #�R�}���h���M���[�U�[�̎擾
-        data.get_userId = f"{interaction.user}"
-        #�T�[�o�[ID�̎擾
-        data.get_guildId = f"{interaction.guild_id}"
-        #�`�����l��ID�̎擾
-        data.get_channelId = f"{interaction.channel_id}"
-            
-        data.set_wordSeq = interaction.data["values"][0]    
-            
+    return InteractionContext(
+        guild_id=str(interaction.guild_id),
+        channel_id=str(interaction.channel_id),
+        user_id=str(interaction.user),
+        user_name=str(interaction.user.display_name),
+        selected_value=None if selected_value is None else str(selected_value),
+    )

@@ -1,78 +1,53 @@
-from pandas.io import sql
-import Entity
-from Entity.RWBEntity import RWBEntity
-
-
-##=====================MYSQLÝ’è
 from db_setup import DbQuery
-#=======================ƒƒOo—ÍÝ’è============================
-from log_setting import getLogger
-logger = getLogger(__name__)
 
-#DBÚ‘±‚ÌƒNƒ‰ƒX‚ðƒCƒ“ƒXƒ^ƒ“ƒX‰»
-queryDb = DbQuery()
 
 class RWBModel:
-    
-    botSeqId = 0
-    guildId = 0
-    channel_id = 0
-    userId = ""
-    regist_word = ""
-    userName = ""
+    """ãƒ¯ãƒ¼ãƒ‰ã¨è¨­å®šã«é–¢ã™ã‚‹DBæ“ä½œã‚’é›†ç´„ã™ã‚‹ã€‚"""
 
-    #ƒT[ƒo[‚Æƒ`ƒƒƒ“ƒlƒ‹ID‚ðŽæ“¾
-    def guildInfo(self,RWBEntity):
-        data = RWBEntity
-        select_query = "SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
-        guildId = data.get_guildId
-        channnelId = data.getchannnelId
-        
-        values = (guildId,channnelId)
-        resultData = queryDb.quryexcute(select_query,values)
-        
-        if not resultData:
-            #ƒf[ƒ^‚ª‚È‚¯‚ê‚ÎAFalse‚ð•Ô‹p
-            return False
-        
-        return resultData[0][0] #ID‚Ì•Ô‹p
-        
-    #ƒ[ƒh“o˜^
-    def WordInsert(self,RWBEntity):
-        data = RWBEntity
-        insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
-        botSeqId = data.get_botSeqId
-        word = data.get_word
-        userId = data.get_userId
-        userName = data.get_userName
-        
-        values = (botSeqId,word,userId,userName)
-        queryDb.quryexcute(insert_query,values);
-        
-    #ƒ[ƒhXV 
-    def WordUpdate(self,RWBEntity):
-        data = RWBEntity
-        #XV‚ª‘I‘ð‚³‚ê‚½‚ç
-        update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
-        word = data.get_word
-        guildId = data.get_guildId
-        channnelId = data.get_channnelId
-        userId = data.get_userId
-        wordSeq = data.get_wordSeq
+    def __init__(self, query_db=None):
+        self.query_db = query_db or DbQuery()
 
-        values = (word,guildId,channnelId,userId,wordSeq)
-        resultData = queryDb.quryexcute(update_query,values)
+    def insert_word(self, botseq_id, word, user_id, user_name):
+        query = (
+            "INSERT INTO WORDTABLE"
+            "(botseq_id,word,create_user_id,create_user) VALUES(%s,%s,%s,%s)"
+        )
+        return self.query_db.quryexcute(
+            query, (botseq_id, word, user_id, user_name)
+        )
 
-    #ƒ[ƒh˜_—íœ
-    def WordDelete(self,RWBEntity):
-        data = RWBEntity
-        update_query = "UPDATE WORDTABLE SET delete_flg = True WHERE botseq_id = (SELECT id FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s) AND create_user_id = %s AND id = %s"
-        guidId = data.get_guildId
-        channnelId = data.get_channelId
-        userId = data.get_userId
-        wordSeq = data.get_wordSeq
+    def update_word(self, botseq_id, word, user_id, word_id):
+        query = (
+            "UPDATE WORDTABLE SET word = %s "
+            "WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
+        )
+        return self.query_db.quryexcute(
+            query, (word, botseq_id, user_id, word_id)
+        )
 
-        values = (guidId,channnelId,userId,wordSeq)
-        resultData = queryDb.quryexcute(update_query,values)
+    def delete_word(self, botseq_id, user_id, word_id):
+        query = (
+            "UPDATE WORDTABLE SET delete_flg = True "
+            "WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
+        )
+        return self.query_db.quryexcute(query, (botseq_id, user_id, word_id))
 
+    def update_anonymous_setting(self, botseq_id, setting_value):
+        query = (
+            "UPDATE settings_value JOIN settings "
+            "ON settings_value.setting_id = settings.setting_id "
+            "SET settings_value.setting_value = %s "
+            "WHERE settings.setting_name = 'Anonymous Setting' "
+            "AND botseq_id = %s"
+        )
+        return self.query_db.quryexcute(query, (setting_value, botseq_id))
 
+    def update_registration_limit(self, botseq_id, setting_value):
+        query = (
+            "UPDATE settings_value JOIN settings "
+            "ON settings_value.setting_id = settings.setting_id "
+            "SET settings_value.setting_value = %s "
+            "WHERE settings.setting_name = 'Registration Limit' "
+            "AND botseq_id = %s"
+        )
+        return self.query_db.quryexcute(query, (setting_value, botseq_id))
