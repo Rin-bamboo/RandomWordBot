@@ -332,7 +332,7 @@ class CreateButton(Button):
                         output_message = output_message + "\n"
 
                     embed.add_field(name="登録したワード", value=output_message)
-                
+
                     message_view.add_item(cancel_button)
                     await interaction.response.send_message(embed=embed,view=message_view,ephemeral  = True)
 

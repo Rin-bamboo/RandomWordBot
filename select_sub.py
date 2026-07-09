@@ -10,8 +10,8 @@ from bot_setting import BotSetting
 from discord.ui import Button, View,TextInput,Modal,Select
 import discord
 
-##=====================MYSQL設定
-from db_setup import DbQuery
+from Model.DiscordInfo import interaction_context
+from Model.RWBModel import RWBModel
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
@@ -28,24 +28,17 @@ class SelectCustom(Select):
     async def callback(self, interaction: discord.Interaction):
         logger.info("=====================================Selectコールバッ処理開始======================================")
         try:
-            #DB接続のクラスをインスタンス化
-            queryDb = DbQuery()
-
             select_custom_id = interaction.data["custom_id"]
-            #コマンド送信ユーザーの取得
-            userId = f"{interaction.user}"
-            #サーバーIDの取得
-            guidId = f"{interaction.guild_id}"
-            #チャンネルIDの取得
-            channnelId = f"{interaction.channel_id}"
-
             selected_value = interaction.data["values"][0]
-            
+            context = interaction_context(interaction, selected_value)
+            model = RWBModel()
             bot_setting = BotSetting()
-            botseq_id = bot_setting.GetBotSeq(guidId,channnelId)
-            
+            botseq_id = bot_setting.GetBotSeq(
+                context.guild_id, context.channel_id
+            )
+
             if select_custom_id == "update_select":
-            
+                #更新処理
                 update_modal = CRUDModal(title="言葉を更新してね")
                 update_input = TextInput(label = "好きな言葉を入力してね",style = discord.TextStyle.short ,custom_id = "update_input@" + str(selected_value) ,placeholder = "言葉を入力",max_length=25,required  = True)
                 update_modal.add_item(update_input)
@@ -53,10 +46,9 @@ class SelectCustom(Select):
                 await interaction.response.send_modal(update_modal)
 
             elif select_custom_id == "delete_select":
-                update_query = "UPDATE WORDTABLE SET delete_flg = True WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
-
-                values = (botseq_id,userId,selected_value)
-                resultData = queryDb.quryexcute(update_query,values)
+                model.delete_word(
+                    botseq_id, context.user_id, context.selected_value
+                )
 
                 await interaction.response.edit_message(content="データを削除したよ！",view=None,delete_after=2)
                 
@@ -66,18 +58,18 @@ class SelectCustom(Select):
                 
                 message_view = CreateView()
                 #BOTSEQ
-                botseqId = bot_setting.GetBotSeq(guidId,channnelId)
-                setting_info_message = bot_setting.GetSettingInfoMessage(botseqId)
+                setting_info_message = bot_setting.GetSettingInfoMessage(botseq_id)
                 if setting_info_message == None:
                     await interaction.response.send_message(content="設定されていません！")
                     return
 
                 
-                setting_data = bot_setting.GetSettingsData(botseqId,selected_value)
+                setting_data = bot_setting.GetSettingsData(
+                    botseq_id, selected_value
+                )
                 
                 if setting_data[0][2] == "Anonymous Setting":
                     #匿名設定
-                    setting_info = bot_setting.GetSettingInfo(botseqId)
                     setting_select = SelectCustom(placeholder="設定情報",custom_id = "anonymouse_setting")
                     
                     setting_select.add_option(value="True",label="表示する",description="",)                
@@ -96,10 +88,7 @@ class SelectCustom(Select):
                     await interaction.response.send_modal(setting_modal)
                 
             elif select_custom_id == "anonymouse_setting":
-                update_query = "UPDATE settings_value JOIN settings ON  settings_value.setting_id = settings.setting_id SET settings_value.setting_value = %s WHERE settings.setting_name = 'Anonymous Setting' AND  botseq_id = %s ;"
-                
-                values = (selected_value,botseq_id)
-                queryDb.quryexcute(update_query,values)
+                model.update_anonymous_setting(botseq_id, selected_value)
 
                 await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
 

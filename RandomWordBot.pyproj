@@ -26,8 +26,11 @@
     <Compile Include="count_characters.py" />
     <Compile Include="db_setup.py" />
     <Compile Include="end_list_output.py" />
+    <Compile Include="Entity\RWBEntity.py" />
     <Compile Include="log_setting.py" />
     <Compile Include="modal_sub.py" />
+    <Compile Include="Model\DiscordInfo.py" />
+    <Compile Include="Model\RWBModel.py" />
     <Compile Include="RandomWordBot.py" />
     <Compile Include="select_sub.py" />
     <Compile Include="text_input.py" />
@@ -42,6 +45,8 @@
   <ItemGroup>
     <Folder Include="img\" />
     <Folder Include="rockpaperscissors\" />
+    <Folder Include="Entity\" />
+    <Folder Include="Model\" />
     <Folder Include="output_list\" />
     <Folder Include="text\" />
   </ItemGroup>
