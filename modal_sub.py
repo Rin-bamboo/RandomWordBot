@@ -6,6 +6,7 @@ import modal_sub #import CRUDModal
 from bot_setting import BotSetting
 from Model.DiscordInfo import interaction_context
 from Model.RWBModel import RWBModel
+from ng_word_filter import is_ng_word
 from discord.ui import Button, View,TextInput,Modal,Select
 import discord
 
@@ -42,6 +43,16 @@ class CRUDModal(Modal, title='Questionnaire Response'):
 
             if len(input_value) > 100:
                 await interaction.response.send_message(f'{input_value} \nは100文字を超えてるよ！！\n100文字以内で登録してね！', ephemeral=True,delete_after=2)
+
+            elif (
+                modal_custom_id in ("regist_input", "update_input")
+                and is_ng_word(input_value)
+            ):
+                await interaction.response.send_message(
+                    "その言葉は登録できません。別の言葉を入力してね！",
+                    ephemeral=True,
+                    delete_after=5,
+                )
 
             else:
 

@@ -31,6 +31,7 @@
     <Compile Include="modal_sub.py" />
     <Compile Include="Model\DiscordInfo.py" />
     <Compile Include="Model\RWBModel.py" />
+    <Compile Include="ng_word_filter.py" />
     <Compile Include="RandomWordBot.py" />
     <Compile Include="select_sub.py" />
     <Compile Include="text_input.py" />
@@ -41,6 +42,7 @@
     <Content Include="img\start.png" />
     <Content Include="README.md" />
     <Content Include="text\help.txt" />
+    <Content Include="text\ng_words.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="img\" />
