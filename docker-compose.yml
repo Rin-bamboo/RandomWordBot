@@ -1,0 +1,31 @@
+services:
+  discord-bot:
+    build: .
+    container_name: phraseblender-bot
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Tokyo
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.4
+    container_name: phraseblender-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PASS:?PASS must be set in .env}
+      MYSQL_DATABASE: ${DB:-botapp}
+      TZ: Asia/Tokyo
+    ports:
+      - "3307:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+09:00
+    volumes:
+      - phraseblender-db-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  phraseblender-db-data:

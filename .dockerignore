@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.venv
+venv
+__pycache__
+*.py[cod]
+*.log
+build
+dist
+logs
+main.prof
+RandomWordBot.spec

@@ -140,7 +140,7 @@ class CreateButton(Button):
 
                     await interaction.response.defer(thinking=True)
 
-                    img_output_path  = r"\output_list\output_table_" + str(seqbotid) + ".png"    #画像ファイル出力先の指定 Linuxの指定じゃないため、変な場所に画像が生成されます。
+                    img_output_path = os.path.join("output_list", f"output_table_{seqbotid}.png")
                     
                     logger.info(f"出力先ファイル：{img_output_path}")
                     
@@ -506,4 +506,3 @@ class CreateButton(Button):
             logger.info("=====================================ボタンコールバック処理終了======================================")
 
     logger.info("=====================================ボタンクラス処理終了======================================")
- 
