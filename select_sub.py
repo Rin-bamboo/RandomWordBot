@@ -17,6 +17,58 @@ from Model.RWBModel import RWBModel
 from log_setting import getLogger
 logger = getLogger(__name__)
 
+
+class ConfirmDeleteButton(Button):
+    def __init__(self, botseq_id, user_id, word_id):
+        super().__init__(
+            style=discord.ButtonStyle.danger,
+            label="削除する",
+            custom_id="confirm_delete_button",
+        )
+        self.botseq_id = botseq_id
+        self.user_id = user_id
+        self.word_id = word_id
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            model = RWBModel()
+            model.delete_word(
+                self.botseq_id,
+                self.user_id,
+                self.word_id,
+            )
+
+            await interaction.response.edit_message(
+                content="データを削除したよ！",
+                view=None,
+                delete_after=2,
+            )
+        except Exception as ex:
+            logger.warning(f"削除確認処理エラー情報：{ex}")
+            await interaction.response.edit_message(
+                content="ごめんね処理に失敗したよ",
+                embed=None,
+                view=None,
+                delete_after=5,
+            )
+
+
+class CancelConfirmButton(Button):
+    def __init__(self):
+        super().__init__(
+            style=discord.ButtonStyle.secondary,
+            label="キャンセル",
+            custom_id="cancel_confirm_button",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(
+            content="キャンセルしました",
+            view=None,
+            delete_after=2,
+        )
+
+
 #Selectのクラスを継承したクラスでtypeを変更する
 class SelectCustom(Select):
     logger.info("=====================================selectクラス処理======================================")
@@ -46,11 +98,20 @@ class SelectCustom(Select):
                 await interaction.response.send_modal(update_modal)
 
             elif select_custom_id == "delete_select":
-                model.delete_word(
-                    botseq_id, context.user_id, context.selected_value
+                confirm_view = View()
+                confirm_view.add_item(
+                    ConfirmDeleteButton(
+                        botseq_id,
+                        context.user_id,
+                        context.selected_value,
+                    )
                 )
+                confirm_view.add_item(CancelConfirmButton())
 
-                await interaction.response.edit_message(content="データを削除したよ！",view=None,delete_after=2)
+                await interaction.response.edit_message(
+                    content="選択したデータを削除します。\n本当に良いですか？",
+                    view=confirm_view,
+                )
                 
             elif select_custom_id == "setting_select":
                 #設定

@@ -71,6 +71,7 @@ class CreateButton(Button):
         delete_button = CreateButton(style=discord.ButtonStyle.danger, label="削除", custom_id="delete_button")
         check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
         get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
+        latest_get_check_button = CreateButton(style=discord.ButtonStyle.primary, label="取得ワード確認", custom_id="latest_get_check_button")
         commit_button = CreateButton(style=discord.ButtonStyle.gray, label="登録完了", custom_id="commit_button")  
         re_regist_button = CreateButton(style=discord.ButtonStyle.success, label="再登録", custom_id="re_regist_button")
         join_button = CreateButton(style=discord.ButtonStyle.primary, label="参加", custom_id="join_button")
@@ -375,6 +376,33 @@ class CreateButton(Button):
 
                     embed.add_field(name="あなたのワード", value=get_word,inline=False)
 
+                    message_view.add_item(latest_get_check_button)
+                    message_view.add_item(cancel_button)
+
+                    await interaction.response.send_message(embed = embed,view=message_view ,ephemeral=True)
+
+            elif button_custom_id == "latest_get_check_button":
+                logger.info("取得済み最新ワード確認ボタン処理")
+
+                select_query = (
+                    "SELECT word FROM WORDTABLE "
+                    "WHERE botseq_id = %s "
+                    "AND use_user_id = %s "
+                    "AND select_flg = True "
+                    "AND delete_flg = False "
+                    "AND enable_flg = False "
+                    "ORDER BY updated_at DESC, id DESC "
+                    "LIMIT 1"
+                )
+                values = (botseq_id,userId)
+                resultData = queryDb.quryexcute(select_query,values)
+
+                if(len(resultData) == 0):
+                    await interaction.response.send_message("まだ取得したワードがないよ！",ephemeral=True,delete_after=2)
+                else:
+                    embed = discord.Embed(title="最後に取得したワード", description="最後に取得したワードをもう一度確認するよ！", color=0x00bfff)
+                    embed.add_field(name="あなたのワード", value=resultData[0][0],inline=False)
+
                     message_view.add_item(cancel_button)
 
                     await interaction.response.send_message(embed = embed,view=message_view ,ephemeral=True)
@@ -415,9 +443,11 @@ class CreateButton(Button):
                 #ボタンインスタンス作成
                 check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
                 get_button = CreateButton(style=discord.ButtonStyle.gray, label="ワードゲット！", custom_id="get_button")
+                latest_get_check_button = CreateButton(style=discord.ButtonStyle.primary, label="取得ワード確認", custom_id="latest_get_check_button")
                 re_regist_button = CreateButton(style=discord.ButtonStyle.success, label="再登録", custom_id="re_regist_button")
                 message_view.add_item(check_button)
                 message_view.add_item(get_button)
+                message_view.add_item(latest_get_check_button)
                 message_view.add_item(re_regist_button)
                 
                 await interaction.response.edit_message(content="登録の完了",view = message_view)
