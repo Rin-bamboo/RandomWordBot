@@ -4,15 +4,68 @@ import view_sub #import CreateView
 import select_sub #import SelectCustom
 import modal_sub #import CRUDModal
 from bot_setting import BotSetting
+from Model.DiscordInfo import interaction_context
+from Model.RWBModel import RWBModel
+from ng_word_filter import is_ng_word
 from discord.ui import Button, View,TextInput,Modal,Select
 import discord
-
-##=====================MYSQL設定
-from db_setup import DbQuery
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
 logger = getLogger(__name__)
+
+
+class ConfirmUpdateButton(Button):
+    def __init__(self, botseq_id, user_id, word_id, word):
+        super().__init__(
+            style=discord.ButtonStyle.primary,
+            label="更新する",
+            custom_id="confirm_update_button",
+        )
+        self.botseq_id = botseq_id
+        self.user_id = user_id
+        self.word_id = word_id
+        self.word = word
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            model = RWBModel()
+            model.update_word(
+                self.botseq_id,
+                self.word,
+                self.user_id,
+                self.word_id,
+            )
+
+            await interaction.response.edit_message(
+                content="変更されました",
+                view=None,
+                delete_after=2,
+            )
+        except Exception as ex:
+            logger.warning(f"更新確認処理エラー情報：{ex}")
+            await interaction.response.edit_message(
+                content="ごめんね処理に失敗したよ",
+                embed=None,
+                view=None,
+                delete_after=5,
+            )
+
+
+class CancelConfirmButton(Button):
+    def __init__(self):
+        super().__init__(
+            style=discord.ButtonStyle.secondary,
+            label="キャンセル",
+            custom_id="cancel_confirm_button",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(
+            content="キャンセルしました",
+            view=None,
+            delete_after=2,
+        )
 
 
 #モーダルクラスを継承したクラスの作成
@@ -23,15 +76,12 @@ class CRUDModal(Modal, title='Questionnaire Response'):
         #await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
     #コマンド送信ユーザーの取得
         try:
-            userId = f"{interaction.user}"
-            userName = f"{interaction.user.display_name}"
-            #サーバーIDの取得
-            guidId = f"{interaction.guild_id}"
-            #チャンネルIDの取得
-            channnelId = f"{interaction.channel_id}"
-            
+            context = interaction_context(interaction)
             bot_setting = BotSetting()
-            botseq_id = bot_setting.GetBotSeq(guidId,channnelId)
+            botseq_id = bot_setting.GetBotSeq(
+                context.guild_id, context.channel_id
+            )
+            model = RWBModel()
 
             intaraction_data = interaction.data["components"][0]["components"][0]
             input_value = intaraction_data["value"]
@@ -44,35 +94,46 @@ class CRUDModal(Modal, title='Questionnaire Response'):
                 get_data_id = split_id[1]
 
 
-            #DB接続のクラスをインスタンス化
-            queryDb = DbQuery()
-
             if len(input_value) > 100:
                 await interaction.response.send_message(f'{input_value} \nは100文字を超えてるよ！！\n100文字以内で登録してね！', ephemeral=True,delete_after=2)
+
+            elif (
+                modal_custom_id in ("regist_input", "update_input")
+                and is_ng_word(input_value)
+            ):
+                await interaction.response.send_message(
+                    "その言葉は登録できません。別の言葉を入力してね！",
+                    ephemeral=True,
+                    delete_after=5,
+                )
 
             else:
 
                 if modal_custom_id == "regist_input":
-                    #登録モーダルで送信したら
-                    #登録処理==
-                    
-                    insert_query = "INSERT INTO WORDTABLE(botseq_id,word,create_user_id,create_user) VALUES( %s,%s,%s,%s);"
-                    values = (botseq_id,input_value,userId,userName);
-
-                    queryDb.quryexcute(insert_query,values);
-
-                    #==========↑↑====================
+                    model.insert_word(
+                        botseq_id,
+                        input_value,
+                        context.user_id,
+                        context.user_name,
+                    )
 
                     await interaction.response.send_message(f'{input_value} 登録できたよ！', ephemeral=True,delete_after=2)
 
                 elif modal_custom_id == "update_input":
-                    #更新が選択されたら
-                    update_query = "UPDATE WORDTABLE SET word = %s WHERE botseq_id = %s AND create_user_id = %s AND id = %s"
+                    confirm_view = View()
+                    confirm_view.add_item(ConfirmUpdateButton(
+                        botseq_id,
+                        context.user_id,
+                        get_data_id,
+                        input_value,
+                    ))
+                    confirm_view.add_item(CancelConfirmButton())
 
-                    values = (input_value,botseq_id,userId,get_data_id)
-                    resultData = queryDb.quryexcute(update_query,values)
-
-                    await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
+                    await interaction.response.send_message(
+                        f"「{input_value}」に更新します。\n本当に良いですか？",
+                        view=confirm_view,
+                        ephemeral=True,
+                    )
                     
                 elif modal_custom_id == "regist_limit":
                     
@@ -83,10 +144,7 @@ class CRUDModal(Modal, title='Questionnaire Response'):
                     else:
                         if 0 < intcheck & intcheck <= 25:
                             
-                            update_query = "UPDATE settings_value JOIN settings ON  settings_value.setting_id = settings.setting_id SET settings_value.setting_value = %s WHERE settings.setting_name = 'Registration Limit' AND  botseq_id = %s ;"
-                
-                            values = (intcheck,botseq_id)
-                            queryDb.quryexcute(update_query,values)
+                            model.update_registration_limit(botseq_id, intcheck)
                         
                             await interaction.response.edit_message(content="変更されました",view=None,delete_after=2)
                         else:
