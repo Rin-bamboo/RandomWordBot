@@ -1,6 +1,12 @@
 .git
 .github
 .env
+.env.*
+.agents
+deploy
+!.env.example
+.codex
+.aws
 .venv
 venv
 __pycache__
@@ -10,4 +16,5 @@ build
 dist
 logs
 main.prof
+output_list
 RandomWordBot.spec

@@ -1,0 +1,60 @@
+name: phraseblender-linux
+
+services:
+  discord-bot:
+    build: .
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN:?BOT_TOKEN must be set}
+      HOST: db
+      USER_NAME: botapp
+      PASS: ${PASS:?PASS must be set}
+      DB: ${DB:-botapp}
+      TZ: Asia/Tokyo
+      LOGFILE: /app/logs/random-word-bot.log
+      MPLBACKEND: Agg
+      NG_WORDS: ${NG_WORDS:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - bot-logs:/app/logs
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: mysql:8.4
+    ports:
+      - "${MYSQL_BIND_ADDRESS:-192.168.40.175}:3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
+      MYSQL_DATABASE: ${DB:-botapp}
+      MYSQL_USER: botapp
+      MYSQL_PASSWORD: ${PASS:?PASS must be set}
+      TZ: Asia/Tokyo
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+09:00
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u\"$$MYSQL_USER\" \"$$MYSQL_DATABASE\" -e 'SELECT setting_id FROM settings LIMIT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  db-data:
+  bot-logs:
