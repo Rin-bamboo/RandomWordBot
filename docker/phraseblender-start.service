@@ -1,0 +1,16 @@
+[Unit]
+Description=Start Phraseblender after its LAN address is available
+StartLimitIntervalSec=1800
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/phraseblender
+ExecStart=/usr/bin/bash %h/phraseblender/docker/start-after-network.sh
+RemainAfterExit=yes
+TimeoutStartSec=360
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target
