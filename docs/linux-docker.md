@@ -66,3 +66,42 @@ A5でMySQL接続を作成し、ホスト `192.168.40.175`、ポート `3307`、
 ユーザー `botapp`、データベース `botapp` を指定します。
 パスワードはサーバー上の `/home/bamboo/phraseblender/.env.linux` の `PASS` です。
 SSHトンネルは不要です。LAN内から接続してください。
+
+## ホスト再起動後の起動待機
+
+DockerがLANアドレスの割当より先に起動すると、DBのポート確保が失敗する場合があります。
+以下のユーザーサービスは公開用IPを最大120秒待ち、DBのネットワークを作り直してからBotを起動します。
+失敗時の再実行は30分間で最大3回に制限します。
+
+配置先が `~/phraseblender` の場合、bambooユーザーで以下を実行します。
+
+```sh
+loginctl enable-linger "$USER"
+mkdir -p ~/.config/systemd/user
+cp docker/phraseblender-start.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now phraseblender-start.service
+```
+
+状態は `systemctl --user status phraseblender-start.service`、
+起動ログは `journalctl --user -u phraseblender-start.service` で確認できます。
+配置先を変更する場合はサービス内のパスも変更してください。
+サービスを手動で再実行するとDBコンテナが再作成され、一時的にDB接続が切れます。ボリュームのデータは保持されます。
+
+## 2026-10-17: 最新取得ワード確認用のDB更新
+
+`WORDTABLE.updated_at` がない既存DBは、バックアップ後に
+`docker/mysql/migrations/20261017-word-updated-at.sql` を一度だけ適用します。
+新規DBは初期化SQLに含まれているため適用不要です。
+既存の取得日時は不明なのでNULLとし、以後のワード取得から日時を保存します。
+日時のない過去データはID降順を代替として使用し、過去の取得順序は復元しません。
+
+2026-10-17の稼働DBへの適用前バックアップは、サーバーの
+`~/phraseblender/backups/before-updated-at-20261017-145029.sql` に保存しています。
+バックアップはGitおよびDockerイメージに含めません。
+
+MySQLを使う結合テストは、稼働データに触れない一時テーブルで実行します。
+
+```sh
+docker compose --env-file .env.linux -f docker-compose.linux.yml run --rm --no-deps -e RUN_MYSQL_TESTS=1 --entrypoint python discord-bot -m unittest discover -s tests -v
+```

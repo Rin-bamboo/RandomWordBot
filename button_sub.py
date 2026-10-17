@@ -49,6 +49,8 @@ class CreateButton(Button):
         button_custom_id = interaction.data["custom_id"]
         #コマンド送信ユーザーの取得
         userId = f"{interaction.user}"
+        # 参加管理はBIGINT列のため、変更可能なユーザー名ではなくDiscordの数値IDで照合する。
+        member_user_id = interaction.user.id
         userName = f"{interaction.user.display_name}"
         #サーバーIDの取得
         guidId = f"{interaction.guild_id}"
@@ -212,14 +214,14 @@ class CreateButton(Button):
 
                 #参加済みかどうか確認
                 select_query = "SELECT id,is_completion FROM join_members WHERE botseq_id = %s AND user_id = %s"
-                values = (bot_id,userId)
+                values = (bot_id,member_user_id)
                 resultData = queryDb.quryexcute(select_query,values)
                 
                 #ボタン表示制御
                 output_message = "好きな言葉の「登録」「更新」「削除」ができるよ！"
                 if len(resultData) == 0:
                     insert_query = "INSERT INTO join_members(botseq_id,user_id) VALUES(%s,%s); "
-                    values = (bot_id,userId)
+                    values = (bot_id,member_user_id)
                     queryDb.quryexcute(insert_query,values)
                     
                     message_view.add_item(regist_button)
@@ -370,7 +372,7 @@ class CreateButton(Button):
                     get_id = get_choice[0]
                     get_word = get_choice[1]
 
-                    update_query = "UPDATE WORDTABLE SET select_flg = True, use_user = %s,use_user_id = %s WHERE botseq_id = %s AND id = %s"
+                    update_query = "UPDATE WORDTABLE SET select_flg = True, use_user = %s,use_user_id = %s, updated_at = CURRENT_TIMESTAMP(6) WHERE botseq_id = %s AND id = %s"
                     values = (userName,userId,botseq_id,int(get_choice[0]))
                     resultData = queryDb.quryexcute(update_query,values)
 
@@ -437,7 +439,7 @@ class CreateButton(Button):
                 
                 #登録完了アップデート
                 update_query = "UPDATE join_members SET is_completion = True WHERE botseq_id = %s AND user_id = %s"
-                values = (botseq_id,userId)
+                values = (botseq_id,member_user_id)
                 resultData = queryDb.quryexcute(update_query,values)
 
                 #ボタンインスタンス作成
@@ -542,7 +544,6 @@ class CreateButton(Button):
                 await interaction.response.send_message(
                     content="ごめんね処理に失敗したよ",
                     embed=None,
-                    view=None,
                     ephemeral=True,
                     delete_after=5,
                 )

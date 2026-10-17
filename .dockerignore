@@ -17,4 +17,5 @@ dist
 logs
 main.prof
 output_list
+backups
 RandomWordBot.spec
