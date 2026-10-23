@@ -12,12 +12,15 @@ services:
       TZ: Asia/Tokyo
       LOGFILE: /app/logs/random-word-bot.log
       MPLBACKEND: Agg
-      NG_WORDS: ${NG_WORDS:-}
+      NG_WORDS: ""
+      NG_WORD_FILE: /app/access-policy/ng_words.txt
+      ACCESS_POLICY_FILE: /app/access-policy/policy.json
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - bot-logs:/app/logs
+      - access-policy:/app/access-policy
     restart: unless-stopped
     logging:
       driver: json-file
@@ -56,5 +59,6 @@ services:
         max-file: "3"
 
 volumes:
+  access-policy:
   db-data:
   bot-logs:

@@ -10,3 +10,5 @@ class InteractionContext:
     user_id: str
     user_name: str
     selected_value: str | None = None
+    guild_name: str | None = None
+    channel_name: str | None = None

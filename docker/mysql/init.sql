@@ -6,7 +6,9 @@ CREATE TABLE BOTSEQTABLE (
     guild_id BIGINT,
     channel_id BIGINT,
     start_up_flg BOOLEAN DEFAULT FALSE,
-    start_up_time_stamp TIMESTAMP NULL
+    start_up_time_stamp TIMESTAMP NULL,
+    guild_name VARCHAR(255) NULL,
+    channel_name VARCHAR(255) NULL
 );
 
 CREATE TABLE WORDTABLE (
@@ -42,9 +44,27 @@ CREATE TABLE join_members (
     botseq_id INT NOT NULL,
     user_id BIGINT NOT NULL,
     is_completion BOOLEAN DEFAULT FALSE,
+    user_name VARCHAR(255) NULL,
+    display_name VARCHAR(255) NULL,
     UNIQUE KEY member_per_channel (botseq_id, user_id)
 );
 
 INSERT INTO settings (setting_name, setting_explanation) VALUES
     ('Anonymous Setting', '終了時の名前表示'),
     ('Registration Limit', '登録できる言葉の上限');
+
+
+
+CREATE TABLE word_reports (
+    report_id BIGINT PRIMARY KEY,
+    guild_id BIGINT NOT NULL,
+    channel_id BIGINT NOT NULL,
+    word_id INT NOT NULL,
+    reporter_id BIGINT NOT NULL,
+    word_snapshot VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NOT NULL,
+    owner_snapshot TEXT NULL,
+    reason VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    notification_message_id BIGINT NULL,
+    UNIQUE KEY reporter_per_word (word_id, reporter_id, word_snapshot)
+);

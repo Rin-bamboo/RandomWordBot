@@ -11,6 +11,7 @@ class JoinButtonTests(unittest.IsolatedAsyncioTestCase):
         interaction.data = {"custom_id": custom_id}
         interaction.user.id = 123456789012345678
         interaction.user.display_name = "参加者"
+        interaction.user.name = "example_user"
         interaction.user.__str__.return_value = "example_user"
         interaction.response.send_message = AsyncMock()
         interaction.response.edit_message = AsyncMock()
@@ -53,7 +54,7 @@ class JoinButtonTests(unittest.IsolatedAsyncioTestCase):
         interaction = self.make_interaction("join_button")
         await CreateButton(label="参加", custom_id="join_button").callback(interaction)
         self.assertEqual((7, interaction.user.id), query.call_args_list[2].args[1])
-        self.assertEqual((7, interaction.user.id), query.call_args_list[3].args[1])
+        self.assertEqual((7, interaction.user.id,"example_user","参加者"), query.call_args_list[3].args[1])
         interaction.response.send_message.assert_awaited_once()
         self.assertIn("view", interaction.response.send_message.call_args.kwargs)
 
@@ -65,8 +66,23 @@ class JoinButtonTests(unittest.IsolatedAsyncioTestCase):
         query.side_effect = [[(7,)], []]
         interaction = self.make_interaction("commit_button")
         await CreateButton(label="登録完了", custom_id="commit_button").callback(interaction)
-        self.assertEqual((7, interaction.user.id), query.call_args_list[1].args[1])
+        self.assertEqual(("example_user","参加者",7, interaction.user.id), query.call_args_list[1].args[1])
         interaction.response.edit_message.assert_awaited_once()
+
+    @patch("button_sub.BotSetting")
+    @patch("button_sub.DbQuery")
+    async def test_rejoin_refreshes_names_without_resetting_completion(self, query_type, setting_type):
+        setting_type.return_value.GetBotSeq.return_value = 7
+        query = query_type.return_value.quryexcute
+        query.side_effect = [[(7,)], [(7,)], [(10,True)], []]
+        interaction = self.make_interaction("join_button")
+        interaction.user.name = "renamed_user"
+        interaction.user.display_name = "変更後の表示名🍎"
+        await CreateButton(label="参加",custom_id="join_button").callback(interaction)
+        sql, parameters = query.call_args_list[3].args
+        self.assertNotIn("is_completion",sql)
+        self.assertEqual(("renamed_user","変更後の表示名🍎",7,interaction.user.id),parameters)
+        self.assertEqual("すでに登録を完了しているよ",interaction.response.send_message.call_args.args[0])
 
     @patch("button_sub.BotSetting")
     @patch("button_sub.DbQuery")

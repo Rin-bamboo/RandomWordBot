@@ -10,6 +10,9 @@ from select_sub import SelectCustom #import SelectCustom
 from modal_sub import CRUDModal #import CRUDModal
 from discord import Button
 from bot_setting import BotSetting
+from operation_log import log_event, trace_interaction
+from access_control import load_policy, restricted_interaction
+from Model.DiscordInfo import location_names
 
 import discord
 
@@ -39,6 +42,8 @@ logger = getLogger(__name__)
 class CreateButton(Button):
     logger.info("=====================================ボタン作成クラス処理======================================")
 
+    @restricted_interaction
+    @trace_interaction("button")
     async def callback(self, interaction: discord.Interaction):
         logger.info("=====================================ボタンコールバック処理======================================")
         #DB接続のクラスをインスタンス化
@@ -51,6 +56,7 @@ class CreateButton(Button):
         userId = f"{interaction.user}"
         # 参加管理はBIGINT列のため、変更可能なユーザー名ではなくDiscordの数値IDで照合する。
         member_user_id = interaction.user.id
+        member_user_name = interaction.user.name
         userName = f"{interaction.user.display_name}"
         #サーバーIDの取得
         guidId = f"{interaction.guild_id}"
@@ -58,7 +64,7 @@ class CreateButton(Button):
         channnelId = f"{interaction.channel_id}"
         
         bot_setting = BotSetting()
-        botseq_id = bot_setting.GetBotSeq(guidId,channnelId)
+        botseq_id = bot_setting.GetBotSeq(guidId,channnelId,**location_names(interaction))
 
         select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
         values = (guidId,channnelId)
@@ -220,9 +226,11 @@ class CreateButton(Button):
                 #ボタン表示制御
                 output_message = "好きな言葉の「登録」「更新」「削除」ができるよ！"
                 if len(resultData) == 0:
-                    insert_query = "INSERT INTO join_members(botseq_id,user_id) VALUES(%s,%s); "
-                    values = (bot_id,member_user_id)
+                    insert_query = "INSERT INTO join_members(botseq_id,user_id,user_name,display_name) VALUES(%s,%s,%s,%s); "
+                    values = (bot_id,member_user_id,member_user_name,userName)
                     queryDb.quryexcute(insert_query,values)
+                    log_event(logger, "member_joined", botseq_id=bot_id, member_user_id=member_user_id,
+                              user_name=member_user_name, display_name=userName)
                     
                     message_view.add_item(regist_button)
                     message_view.add_item(update_button)
@@ -232,6 +240,12 @@ class CreateButton(Button):
                     message_view.add_item(commit_button)
 
                 else:
+                    queryDb.quryexcute(
+                        "UPDATE join_members SET user_name=%s,display_name=%s WHERE botseq_id=%s AND user_id=%s",
+                        (member_user_name,userName,bot_id,member_user_id),
+                    )
+                    log_event(logger, "member_names_updated", botseq_id=bot_id, member_user_id=member_user_id,
+                              user_name=member_user_name, display_name=userName)
                     if resultData[0][1] == False:
                         message_view.add_item(regist_button)
                         message_view.add_item(update_button)
@@ -347,9 +361,17 @@ class CreateButton(Button):
                 #ワード登録チェック（参加者全員が登録完了してからワードゲット可能）
                 select_query = "SELECT MIN(is_completion) FROM join_members WHERE botseq_id = %s GROUP BY botseq_id"
                 values = (botseq_id,)
+                blocked_users = sorted(load_policy()["blocked_user_ids"])
+                if blocked_users:
+                    placeholders = ",".join("%s" for _ in blocked_users)
+                    select_query = (
+                        "SELECT MIN(is_completion) FROM join_members WHERE botseq_id = %s "
+                        f"AND user_id NOT IN ({placeholders}) GROUP BY botseq_id"
+                    )
+                    values = (botseq_id, *blocked_users)
                 resultData = queryDb.quryexcute(select_query,values)
                 
-                if (resultData[0][0] == 0):
+                if resultData and resultData[0][0] == 0:
                     await interaction.response.send_message("まだ登録が終わっていないよ",ephemeral=True,delete_after=2)
                     return
                 
@@ -377,6 +399,7 @@ class CreateButton(Button):
                     resultData = queryDb.quryexcute(update_query,values)
 
                     embed.add_field(name="あなたのワード", value=get_word,inline=False)
+                    log_event(logger, "word_acquired", botseq_id=botseq_id, word_id=get_id, word=get_word)
 
                     message_view.add_item(latest_get_check_button)
                     message_view.add_item(cancel_button)
@@ -438,9 +461,11 @@ class CreateButton(Button):
                 logger.info("登録完了ボタンの押下")
                 
                 #登録完了アップデート
-                update_query = "UPDATE join_members SET is_completion = True WHERE botseq_id = %s AND user_id = %s"
-                values = (botseq_id,member_user_id)
+                update_query = "UPDATE join_members SET is_completion = True,user_name=%s,display_name=%s WHERE botseq_id = %s AND user_id = %s"
+                values = (member_user_name,userName,botseq_id,member_user_id)
                 resultData = queryDb.quryexcute(update_query,values)
+                log_event(logger, "member_registration_completed", botseq_id=botseq_id, member_user_id=member_user_id,
+                          user_name=member_user_name, display_name=userName)
 
                 #ボタンインスタンス作成
                 check_button = CreateButton(style=discord.ButtonStyle.primary, label="確認", custom_id="check_button")
@@ -532,6 +557,7 @@ class CreateButton(Button):
             #    logging.error(Err)
             
         except Exception as ex:
+            log_event(logger, "button_failed", outcome="failed", error_type=type(ex).__name__)
             logger.exception("ボタンコールバック処理でエラーが発生しました")
             if interaction.response.is_done():
                 await interaction.edit_original_response(

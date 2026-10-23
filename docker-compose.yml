@@ -6,9 +6,12 @@ services:
       - .env
     environment:
       TZ: Asia/Tokyo
+      ACCESS_POLICY_FILE: /app/access-policy/policy.json
     depends_on:
       - db
     restart: unless-stopped
+    volumes:
+      - access-policy:/app/access-policy
 
   db:
     image: mysql:8.4
@@ -28,4 +31,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  access-policy:
   phraseblender-db-data:

@@ -1,0 +1,29 @@
+name: phraseblender-linux
+services:
+  admin-web:
+    build: ./admin_web
+    # 稼働Botの設定ファイル(所有者100:101、権限600)を読み取る。NG設定ボリュームだけを更新可能にする。
+    user: "100:101"
+    env_file: .env.admin
+    ports:
+      - "${ADMIN_BIND_ADDRESS:-192.168.40.175}:8084:8080"
+    volumes:
+      - ./admin-tls/cert.pem:/run/cert.pem:ro
+      - ./admin-tls/key.pem:/run/key.pem:ro
+      - access-policy:/run/access-policy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  access-policy:
+    external: true
+    name: phraseblender-linux_access-policy
