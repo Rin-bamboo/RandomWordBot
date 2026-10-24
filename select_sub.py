@@ -15,6 +15,8 @@ from Model.RWBModel import RWBModel
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
+from operation_log import log_event, trace_interaction
+from access_control import restricted_interaction
 logger = getLogger(__name__)
 
 
@@ -29,6 +31,8 @@ class ConfirmDeleteButton(Button):
         self.user_id = user_id
         self.word_id = word_id
 
+    @restricted_interaction
+    @trace_interaction("button")
     async def callback(self, interaction: discord.Interaction):
         try:
             model = RWBModel()
@@ -44,7 +48,8 @@ class ConfirmDeleteButton(Button):
                 delete_after=2,
             )
         except Exception as ex:
-            logger.warning(f"削除確認処理エラー情報：{ex}")
+            log_event(logger, "word_delete_failed", outcome="failed", error_type=type(ex).__name__)
+            logger.exception("削除確認処理失敗")
             await interaction.response.edit_message(
                 content="ごめんね処理に失敗したよ",
                 embed=None,
@@ -61,6 +66,8 @@ class CancelConfirmButton(Button):
             custom_id="cancel_confirm_button",
         )
 
+    @restricted_interaction
+    @trace_interaction("button")
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.edit_message(
             content="キャンセルしました",
@@ -77,16 +84,20 @@ class SelectCustom(Select):
         super().__init__(custom_id=custom_id)
         logger.info("=====================================selectコンストラクタ処理終了======================================")
 
+    @restricted_interaction
+    @trace_interaction("select")
     async def callback(self, interaction: discord.Interaction):
         logger.info("=====================================Selectコールバッ処理開始======================================")
         try:
             select_custom_id = interaction.data["custom_id"]
             selected_value = interaction.data["values"][0]
+            log_event(logger, "selection_received", selected_value=selected_value)
             context = interaction_context(interaction, selected_value)
             model = RWBModel()
             bot_setting = BotSetting()
             botseq_id = bot_setting.GetBotSeq(
-                context.guild_id, context.channel_id
+                context.guild_id, context.channel_id,
+                guild_name=context.guild_name, channel_name=context.channel_name,
             )
 
             if select_custom_id == "update_select":
@@ -155,7 +166,8 @@ class SelectCustom(Select):
 
 
         except Exception as ex:
-           logger.warning(f"エラー情報：{ex}")
+           log_event(logger, "select_failed", outcome="failed", error_type=type(ex).__name__)
+           logger.exception("選択処理失敗")
            await interaction.response.edit_message(content="ごめんね処理に失敗したよ",embed=None,view=None,delete_after = 5)
         finally:
             logger.info("=====================================Selectコールバック処理終了======================================")

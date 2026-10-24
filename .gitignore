@@ -163,3 +163,12 @@ cython_debug/
 
 #customfile
 config.py
+# ローテーション済みログにも操作情報が含まれるため、ディレクトリごと除外する。
+logs/
+
+# Admin dashboard runtime secrets
+.env.admin
+admin-tls/
+admin-web-upload.tar.gz
+.admin-login.txt
+admin_web/runtime/

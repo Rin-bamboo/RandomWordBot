@@ -10,10 +10,13 @@ services:
       BOT_TOKEN: ${BOT_TOKEN_DEV:?BOT_TOKEN_DEV must be set in .env}
       HOST: db-dev
       TZ: Asia/Tokyo
+      ACCESS_POLICY_FILE: /app/access-policy/policy.json
     depends_on:
       db-dev:
         condition: service_healthy
     restart: "no"
+    volumes:
+      - access-policy:/app/access-policy
 
   db-dev:
     image: mysql:8.4
@@ -39,4 +42,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  access-policy:
   phraseblender-db-dev-data:

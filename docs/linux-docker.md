@@ -26,6 +26,46 @@ Discord Developer PortalでServer Members IntentとMessage Content Intentを有�
 
 ## 起動と確認
 
+運用中のログ項目と障害調査の方法は [操作ログ](operation-logging.md) を参照してください。
+
+`BOTSEQTABLE.guild_name` と `channel_name` に、問い合わせ時に確認するサーバー名・チャンネル名を保存します。
+Bot起動時にDiscord上の導入済みサーバー一覧を取得し、未登録サーバーを `channel_id=NULL`、`start_up_flg=FALSE` で登録します。
+新しくサーバーへ導入された際も `on_guild_join` イベントで同じ初期状態を即時登録します。
+再導入時は既存行を維持します。イベントでDB登録に失敗した場合はログを残し、次回起動時の一覧同期で補完します。
+既存のチャンネル行があるサーバーは重複登録しません。最初の `/start` で未使用サーバーの行へチャンネルを設定し、
+別チャンネルでの利用時は従来どおり別行を登録します。退出済みサーバーの履歴を自動削除することはありません。
+Bot起動時に確認できる既存行を補完し、`/start`やボタン・フォーム・選択メニューの操作時に名前変更を反映します。
+取得できない名前は既存値を維持し、未取得の場合はNULLです。履歴ではなく最後に確認した名前を保存します。
+
+名前列がない既存DBはバックアップ後に `docker/mysql/migrations/20261017-location-names.sql` を一度だけ適用します。
+導入済みサーバー同期自体に追加のDBスキーマ変更は不要です。
+新規DBでは初期化SQLに含まれるため不要です。2026-10-17の適用前バックアップは
+`~/phraseblender/backups/before-location-names-20261017-161754.sql` に保存しています。
+
+A5等では以下で確認できます。
+
+```sql
+SELECT id, guild_id, guild_name, channel_id, channel_name
+FROM BOTSEQTABLE
+ORDER BY id;
+```
+
+`join_members.user_name` にはDiscordユーザー名、`display_name` にはそのサーバーでの表示名を保存します。
+数値の `user_id` による識別は維持し、参加・再参加・登録完了時に名前を更新します。
+起動時にも、Botのキャッシュで確認できる既存参加者の名前を補完します。
+退出済み・確認できない参加者の名前は既存値を維持し、未取得の場合はNULLです。
+登録完了状態を名前変更によってリセットすることはありません。
+ゲーム終了時に参加者行を削除する既存動作は変更しません。
+
+名前列がない既存DBには、バックアップ後に `docker/mysql/migrations/20261017-member-names.sql` を一度だけ適用します。
+適用前バックアップは `~/phraseblender/backups/before-member-names-20261017-163440.sql` です。
+
+```sql
+SELECT id, botseq_id, user_id, user_name, display_name, is_completion
+FROM join_members
+ORDER BY botseq_id, id;
+```
+
 ```sh
 docker compose --env-file .env.linux -f docker-compose.linux.yml config --quiet
 docker compose --env-file .env.linux -f docker-compose.linux.yml up -d --build

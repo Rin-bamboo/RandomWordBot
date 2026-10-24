@@ -19,11 +19,15 @@ import text_input
 import discord
 #スラッシュコマンドライブラリの読み込み
 from discord import app_commands
+from discord.ext import tasks
+from access_control import allow_interaction, enforce_blocked_guilds, leave_if_blocked, restricted_interaction
 #DB MYSQL
 #import mysql.connector
 
 #=======================ログ出力設定============================
 from log_setting import getLogger
+from operation_log import log_event, trace_interaction
+from Model.DiscordInfo import location_names
 #import logging
 logger = getLogger(__name__)
 
@@ -48,10 +52,22 @@ intents.presences = False       #プレゼンス(状態)インテンツは無視
 intents.guilds=True             #Guild(サーバー)のインテンツの取得
 intents.members = True          #メンバーインテンツの取得
 
+class RestrictedCommandTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction):
+        return await allow_interaction(interaction)
+
+
 client = discord.Client(intents=intents)
-tree = app_commands.CommandTree(client)
+tree = RestrictedCommandTree(client)
+from word_reporting import register_report_commands
+register_report_commands(tree)
     
 logger.info("=====================================各種設定読み込み終了======================================")
+
+
+@tasks.loop(seconds=60)
+async def access_sweep():
+    await enforce_blocked_guilds(client)
 
 @client.event
 async def on_ready():
@@ -59,16 +75,38 @@ async def on_ready():
     try:
         view = CreateView()
         logger.info(f'We have logged in as {client.user}')
+        await enforce_blocked_guilds(client)
+        if not access_sweep.is_running():
+            access_sweep.start()
         await tree.sync()
+        BotSetting().SyncInstalledGuilds(client)
+        BotSetting().SyncLocationNames(client)
+        BotSetting().SyncMemberNames(client)
     except Exception as ex:
        logger.warning("BOT起動でエラーが発生しました")
        logger.warning(f"エラー情報：{ex}")
     finally:
         logger.info("=====================================ボット開始処理終了======================================")
 
+@client.event
+async def on_guild_join(guild):
+    log_event(logger,"guild_join_received",guild_id=guild.id,guild_name=guild.name)
+    try:
+        if await leave_if_blocked(guild):
+            return
+        registered = BotSetting().RegisterInstalledGuild(guild)
+        log_event(logger,"guild_join_processed",guild_id=guild.id,guild_name=guild.name,
+                  registered=registered)
+    except Exception:
+        # イベント時に失敗しても、次回起動時の一覧同期で補完する。
+        logger.exception("導入時のサーバー登録失敗 guild_id=%s",guild.id)
+
+
 #=============================================================テストコマンドです
 #コマンド読み取り
 @tree.command(name = "start",description="スタートするよ！")
+@restricted_interaction
+@trace_interaction("command")
 async def start(interaction: discord.Interaction):  
     logger.info("=====================================startコマンド取得処理======================================")
     try:
@@ -84,17 +122,17 @@ async def start(interaction: discord.Interaction):
         queryDb = DbQuery()
         
         bot_setting = BotSetting()
+        names = location_names(interaction)
         select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s"
         values = (guidId,channnelId)
         resultData = queryDb.quryexcute(select_query,values)
             
         if (len(resultData) == 0):
             #データがいなかったら
-            insert_query="INSERT INTO BOTSEQTABLE(guild_id,channel_id,start_up_flg,start_up_time_stamp) VALUES(%s,%s,True,cast(now() as datetime))"
-            queryDb.quryexcute(insert_query,values)
+            bot_setting.RegisterChannel(guidId,channnelId,**names)
             
             #設定をデフォルト値で作成
-            seqbotid = bot_setting.GetBotSeq(guidId,channnelId)
+            seqbotid = bot_setting.GetBotSeq(guidId,channnelId,**names)
             
             select_query = "SELECT setting_id FROM settings WHERE setting_name = %s"
             values = ('Anonymous Setting',)
@@ -117,7 +155,7 @@ async def start(interaction: discord.Interaction):
             select_query = "SELECT * FROM BOTSEQTABLE WHERE guild_id = %s AND channel_id = %s AND start_up_flg = True"
             resultData = queryDb.quryexcute(select_query,values)
             
-            seqbotid = bot_setting.GetBotSeq(guidId,channnelId)
+            seqbotid = bot_setting.GetBotSeq(guidId,channnelId,**names)
             select_query = "SELECT * FROM settings_value WHERE botseq_id = %s"
             values = (seqbotid,)
             settingResultData = queryDb.quryexcute(select_query,values)
@@ -177,14 +215,21 @@ async def start(interaction: discord.Interaction):
         await interaction.response.send_message(label, view=view)
 
     except Exception as ex:
-       logger.warning(f"エラー情報：{ex}")
-       await interaction.response.send_message("起動に失敗したよ！時間をおいてもう一度試してみて！")
+       log_event(logger, "command_failed", outcome="failed", error_type=type(ex).__name__)
+       logger.exception("startコマンド処理失敗")
+       await interaction.response.send_message(
+           "起動に失敗したよ！時間をおいてもう一度試してみて！\n"
+           "何度も失敗する場合は、公式サポートサーバーへご連絡ください。\n"
+           "https://discord.gg/qsNaRFAbz2"
+       )
     finally:
         
         logger.info("=====================================startコマンド処理終了======================================")
 
 
 @tree.command(name="help",description="ざっくりとした説明だよ！")
+@restricted_interaction
+@trace_interaction("command")
 async def redme_command(interaction: discord.Interaction):
     help_text = text_input.inptfile("help")
     await interaction.response.send_message(help_text)

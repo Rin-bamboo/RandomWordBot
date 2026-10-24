@@ -21,6 +21,10 @@ COPY --chown=bot:bot . .
 RUN mkdir -p /app/logs /app/output_list \
     && chown -R bot:bot /app/logs /app/output_list
 
+RUN mkdir -p /app/access-policy \
+    && cp /app/config/access_policy.json /app/access-policy/policy.json \
+    && chown -R bot:bot /app/access-policy
+
 USER bot
 
 CMD ["python", "-u", "RandomWordBot.py"]
